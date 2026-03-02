@@ -1,0 +1,41 @@
+# 環境変数（機密情報）
+.env
+.env.local
+.env.*.local
+# 各環境の実際の設定ファイル（.example テンプレートはコミット可）
+.env.staging
+.env.production
+.env.prod
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node.js / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Alembic（自動生成ファイルは除外しない）
+# alembic/versions/  ← コミット対象

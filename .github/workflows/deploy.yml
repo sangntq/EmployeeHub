@@ -1,0 +1,123 @@
+name: Deploy to ECS
+
+# develop → staging, main → production
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    # GitHub Environments を使って Secrets/Variables を分離
+    # Settings > Environments に "staging" と "production" を作成すること
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - name: コードチェックアウト
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────────────
+      # AWS 認証
+      # ─────────────────────────────────────────────────────
+      - name: AWS 認証情報を設定
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: ECR ログイン
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ─────────────────────────────────────────────────────
+      # Docker イメージのビルド & プッシュ
+      # ─────────────────────────────────────────────────────
+      - name: バックエンドイメージをビルド & プッシュ
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPO: ${{ vars.ECR_BACKEND_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f backend/Dockerfile.prod \
+            -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPO:latest \
+            backend/
+          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:latest
+          echo "backend_image=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        id: build-backend
+
+      - name: フロントエンドイメージをビルド & プッシュ
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPO: ${{ vars.ECR_FRONTEND_REPO }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -f frontend/Dockerfile.prod \
+            --build-arg VITE_API_BASE_URL="" \
+            -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPO:latest \
+            frontend/
+          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPO:latest
+          echo "frontend_image=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        id: build-frontend
+
+      # ─────────────────────────────────────────────────────
+      # バックエンド ECS デプロイ
+      # ─────────────────────────────────────────────────────
+      - name: バックエンドのタスク定義を取得
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_BACKEND_TASK_DEF }} \
+            --query taskDefinition \
+            > /tmp/backend-task-def.json
+
+      - name: バックエンドタスク定義に新イメージを設定
+        id: backend-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: /tmp/backend-task-def.json
+          container-name: ${{ vars.BACKEND_CONTAINER_NAME }}
+          image: ${{ steps.build-backend.outputs.backend_image }}
+
+      - name: バックエンドを ECS にデプロイ
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.backend-task-def.outputs.task-definition }}
+          service: ${{ vars.ECS_BACKEND_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      # ─────────────────────────────────────────────────────
+      # フロントエンド ECS デプロイ
+      # ─────────────────────────────────────────────────────
+      - name: フロントエンドのタスク定義を取得
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_FRONTEND_TASK_DEF }} \
+            --query taskDefinition \
+            > /tmp/frontend-task-def.json
+
+      - name: フロントエンドタスク定義に新イメージを設定
+        id: frontend-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: /tmp/frontend-task-def.json
+          container-name: ${{ vars.FRONTEND_CONTAINER_NAME }}
+          image: ${{ steps.build-frontend.outputs.frontend_image }}
+
+      - name: フロントエンドを ECS にデプロイ
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.frontend-task-def.outputs.task-definition }}
+          service: ${{ vars.ECS_FRONTEND_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true

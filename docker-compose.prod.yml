@@ -1,0 +1,62 @@
+# =============================================
+# 本番環境用 Docker Compose（ローカル検証用）
+#
+# 使用方法:
+#   cp .env.staging.example .env.prod
+#   # .env.prod を編集して本番用の値を設定
+#   docker compose -f docker-compose.prod.yml up --build
+#
+# AWS ECS 本番環境では使用しない（CI/CD パイプライン経由でデプロイ）
+# =============================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-employeehub}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-employeehub}
+      POSTGRES_DB: ${DB_NAME:-employeehub_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-employeehub} -d ${DB_NAME:-employeehub_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-employeehub}:${DB_PASSWORD:-employeehub}@db:5432/${DB_NAME:-employeehub_db}
+      DATABASE_URL_SYNC: postgresql://${DB_USER:-employeehub}:${DB_PASSWORD:-employeehub}@db:5432/${DB_NAME:-employeehub_db}
+    volumes:
+      # ファイルストレージ（S3 未設定時のフォールバック）
+      - uploads:/app/uploads
+      - exports:/app/exports
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        # "" = 相対パス → nginx が /api をバックエンドにプロキシ
+        VITE_API_BASE_URL: ""
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  uploads:
+  exports:

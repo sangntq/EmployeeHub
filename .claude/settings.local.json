@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet --version)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(dotnet nuget list source)",
+      "Bash(dotnet new list)",
+      "Bash(dotnet restore --ignore-failed-sources)",
+      "Bash(dotnet build --ignore-failed-sources)",
+      "Bash(docker compose exec backend pytest -v)"
+    ]
+  }
+}
