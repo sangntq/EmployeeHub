@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Kỹ sư · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/engineers.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>Quản lý Kỹ sư</span>
+          </div>
+          <h1 class="page-header__title">👥 Danh sách Kỹ sư</h1>
+          <p class="page-header__subtitle">Quản lý toàn bộ 1,120 kỹ sư · Nhật Bản & Việt Nam</p>
+        </div>
+        <div class="page-header__actions">
+          <div class="eng-view-toggle">
+            <button class="eng-view-btn eng-view-btn--active" id="btnTable" onclick="switchView('table')">☰ Bảng</button>
+            <button class="eng-view-btn" id="btnCard"  onclick="switchView('card')">⊞ Thẻ</button>
+          </div>
+          <button class="btn btn--secondary" onclick="exportList()">📊 Export</button>
+          <button class="btn btn--primary"   onclick="showToast('Tính năng thêm KS đang phát triển','info')">＋ Thêm KS</button>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="stats-grid" id="summaryStats" style="margin-bottom:var(--space-6)"></div>
+
+      <!-- Filter Bar -->
+      <div class="eng-filter">
+        <div class="eng-filter__search">
+          <span class="eng-filter__search-icon">🔍</span>
+          <input type="text" id="searchName" class="form-control"
+            placeholder="Tên, ID, team..." oninput="applyFilters()">
+        </div>
+
+        <div class="eng-filter__divider"></div>
+
+        <select class="form-control form-select" id="fLoc"
+          style="width:auto;padding:8px 32px 8px 12px;font-size:13px" onchange="applyFilters()">
+          <option value="all">🌏 Tất cả</option>
+          <option value="jp">🇯🇵 Nhật Bản</option>
+          <option value="vn">🇻🇳 Việt Nam</option>
+        </select>
+
+        <select class="form-control form-select" id="fLevel"
+          style="width:auto;padding:8px 32px 8px 12px;font-size:13px" onchange="applyFilters()">
+          <option value="all">Tất cả cấp bậc</option>
+          <option value="Junior">Junior</option>
+          <option value="Middle">Middle</option>
+          <option value="Senior">Senior</option>
+          <option value="Lead">Lead</option>
+        </select>
+
+        <select class="form-control form-select" id="fStatus"
+          style="width:auto;padding:8px 32px 8px 12px;font-size:13px" onchange="applyFilters()">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="available">🟢 Đang rảnh</option>
+          <option value="partial">🟡 Một phần</option>
+          <option value="busy">🔴 Đang bận</option>
+        </select>
+
+        <select class="form-control form-select" id="fSkill"
+          style="width:auto;padding:8px 32px 8px 12px;font-size:13px" onchange="applyFilters()">
+          <option value="">Tất cả skill</option>
+          <option>Java</option><option>React</option><option>Python</option>
+          <option>.NET</option><option>AWS</option><option>Kubernetes</option>
+          <option>TypeScript</option><option>Docker</option>
+        </select>
+
+        <select class="form-control form-select" id="fJapanese"
+          style="width:auto;padding:8px 32px 8px 12px;font-size:13px" onchange="applyFilters()">
+          <option value="">Tất cả tiếng Nhật</option>
+          <option value="N1">N1</option>
+          <option value="N2">N2 trở lên</option>
+          <option value="N3">N3 trở lên</option>
+        </select>
+
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" id="fMobilize" onchange="applyFilters()"
+            style="accent-color:var(--color-primary-600);width:15px;height:15px">
+          ✈️ Mobilizable
+        </label>
+
+        <button class="btn btn--sm btn--ghost" onclick="resetFilters()">✕ Reset</button>
+
+        <span class="eng-filter__result">
+          Hiển thị <strong id="countShown">0</strong> / <strong id="countTotal">0</strong> KS
+        </span>
+      </div>
+
+      <!-- Active filter chips -->
+      <div class="active-filters" id="activeFilters"></div>
+
+      <!-- ── TABLE VIEW ── -->
+      <div id="tableView">
+        <div class="eng-table-wrap">
+          <div style="overflow-x:auto">
+            <table class="eng-table">
+              <thead>
+                <tr>
+                  <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)" style="accent-color:var(--color-primary-600);width:15px;height:15px"></th>
+                  <th onclick="sortBy('name')">Kỹ sư</th>
+                  <th onclick="sortBy('location')">Vị trí</th>
+                  <th onclick="sortBy('level')">Cấp bậc</th>
+                  <th>Skills nổi bật</th>
+                  <th onclick="sortBy('status')">Trạng thái</th>
+                  <th>Workload</th>
+                  <th onclick="sortBy('japanese')">Tiếng Nhật</th>
+                  <th onclick="sortBy('rating')">Rating</th>
+                  <th>Chứng chỉ</th>
+                  <th style="width:100px">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+
+      <!-- ── CARD VIEW ── -->
+      <div id="cardView" style="display:none">
+        <div class="eng-card-grid" id="cardGrid"></div>
+        <div style="display:flex;justify-content:center;margin-top:var(--space-6)" id="cardPagination"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ── Detail Panel ── -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-panel__hero" id="detailHero"></div>
+  <div class="detail-panel__body" id="detailBody"></div>
+  <div class="detail-panel__footer">
+    <button class="btn btn--primary" style="flex:1" onclick="showToast('Mở profile đầy đủ','info');closeDetail()">✏️ Chỉnh sửa profile</button>
+    <button class="btn btn--secondary" onclick="showToast('Đang phân công...','info')">📌 Phân công dự án</button>
+    <button class="btn btn--ghost" onclick="closeDetail()">✕</button>
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+document.body.dataset.role = 'sales';
+renderSidebar('sales');
+attachLangSelector();
+function onLangChange() { renderEngineers(); }
+
+/* ─── State ────────────────────────────────────────────── */
+let allEngineers  = [...ENGINEERS];
+let filtered      = [...ENGINEERS];
+let currentView   = 'table';
+let sortKey       = 'name';
+let sortDir       = 1;   // 1=asc -1=desc
+let currentPage   = 1;
+const PAGE_SIZE   = 8;
+let selectedIds   = new Set();
+
+/* ─── Level order ──────────────────────────────────────── */
+const LEVEL_ORDER = { Junior:0, Middle:1, Senior:2, Lead:3, Principal:4 };
+const JP_ORDER    = { 'N1':4, 'N2':3, 'N3':2, 'Business':1, 'Giao tiếp':0, 'Cơ bản':0 };
+
+/* ─── Stats ────────────────────────────────────────────── */
+function renderStats() {
+  const avail   = filtered.filter(e => e.status === 'available').length;
+  const partial = filtered.filter(e => e.status === 'partial').length;
+  const busy    = filtered.filter(e => e.status === 'busy').length;
+  const mobile  = filtered.filter(e => e.mobilizable).length;
+
+  document.getElementById('summaryStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card__header">
+        <span class="stat-card__label">Kỹ sư hiển thị</span>
+        <div class="stat-card__icon icon-bg--indigo">👥</div>
+      </div>
+      <div class="stat-card__value">${filtered.length}</div>
+      <div class="stat-card__sub">
+        <span class="stat-card__sub-item"><span class="stat-card__sub-dot" style="background:#4F46E5"></span>JP: ${filtered.filter(e=>e.location==='jp').length}</span>
+        <span class="stat-card__sub-item"><span class="stat-card__sub-dot" style="background:#10B981"></span>VN: ${filtered.filter(e=>e.location==='vn').length}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__header">
+        <span class="stat-card__label">🟢 Đang rảnh</span>
+        <div class="stat-card__icon icon-bg--green">🟢</div>
+      </div>
+      <div class="stat-card__value" style="color:var(--color-success)">${avail}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__header">
+        <span class="stat-card__label">🟡 Một phần rảnh</span>
+        <div class="stat-card__icon icon-bg--yellow">🟡</div>
+      </div>
+      <div class="stat-card__value" style="color:var(--color-warning)">${partial}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__header">
+        <span class="stat-card__label">🔴 Đang bận</span>
+        <div class="stat-card__icon icon-bg--red">🔴</div>
+      </div>
+      <div class="stat-card__value" style="color:var(--color-danger)">${busy}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__header">
+        <span class="stat-card__label">✈️ Mobilizable</span>
+        <div class="stat-card__icon icon-bg--blue">✈️</div>
+      </div>
+      <div class="stat-card__value" style="color:var(--color-info)">${mobile}</div>
+    </div>`;
+}
+
+/* ─── Filter ────────────────────────────────────────────── */
+function applyFilters() {
+  const search  = document.getElementById('searchName').value.toLowerCase();
+  const loc     = document.getElementById('fLoc').value;
+  const level   = document.getElementById('fLevel').value;
+  const status  = document.getElementById('fStatus').value;
+  const skill   = document.getElementById('fSkill').value;
+  const jp      = document.getElementById('fJapanese').value;
+  const mobile  = document.getElementById('fMobilize').checked;
+
+  filtered = allEngineers.filter(e => {
+    if (search && !e.name.toLowerCase().includes(search)
+               && !e.id.toLowerCase().includes(search)
+               && !e.team.toLowerCase().includes(search)) return false;
+    if (loc    !== 'all' && e.location !== loc) return false;
+    if (level  !== 'all' && e.level !== level)  return false;
+    if (status !== 'all' && e.status !== status) return false;
+    if (skill  && !e.skills.some(s => s.name === skill)) return false;
+    if (mobile && !e.mobilizable) return false;
+    if (jp === 'N1' && !['N1'].includes(e.japanese)) return false;
+    if (jp === 'N2' && !['N1','N2'].includes(e.japanese)) return false;
+    if (jp === 'N3' && !['N1','N2','N3'].includes(e.japanese)) return false;
+    return true;
+  });
+
+  sortFiltered();
+  currentPage = 1;
+  document.getElementById('countShown').textContent = filtered.length;
+  document.getElementById('countTotal').textContent = allEngineers.length;
+  renderActiveChips();
+  renderStats();
+  render();
+}
+
+function resetFilters() {
+  document.getElementById('searchName').value = '';
+  document.getElementById('fLoc').value    = 'all';
+  document.getElementById('fLevel').value  = 'all';
+  document.getElementById('fStatus').value = 'all';
+  document.getElementById('fSkill').value  = '';
+  document.getElementById('fJapanese').value = '';
+  document.getElementById('fMobilize').checked = false;
+  applyFilters();
+}
+
+/* ─── Active filter chips ──────────────────────────────── */
+function renderActiveChips() {
+  const chips = [];
+  const loc    = document.getElementById('fLoc').value;
+  const level  = document.getElementById('fLevel').value;
+  const status = document.getElementById('fStatus').value;
+  const skill  = document.getElementById('fSkill').value;
+  const jp     = document.getElementById('fJapanese').value;
+  const mobile = document.getElementById('fMobilize').checked;
+  const search = document.getElementById('searchName').value;
+
+  if (search)  chips.push({ label: `🔍 "${search}"`,   clear: ()=>{ document.getElementById('searchName').value=''; applyFilters(); } });
+  if (loc !== 'all') chips.push({ label: loc==='jp'?'🇯🇵 Nhật Bản':'🇻🇳 Việt Nam', clear: ()=>{ document.getElementById('fLoc').value='all'; applyFilters(); } });
+  if (level !== 'all') chips.push({ label: level, clear: ()=>{ document.getElementById('fLevel').value='all'; applyFilters(); } });
+  if (status !== 'all') chips.push({ label: status==='available'?'🟢 Rảnh':status==='partial'?'🟡 Một phần':'🔴 Bận', clear: ()=>{ document.getElementById('fStatus').value='all'; applyFilters(); } });
+  if (skill)   chips.push({ label: '💻 '+skill, clear: ()=>{ document.getElementById('fSkill').value=''; applyFilters(); } });
+  if (jp)      chips.push({ label: '🇯🇵 '+jp, clear: ()=>{ document.getElementById('fJapanese').value=''; applyFilters(); } });
+  if (mobile)  chips.push({ label: '✈️ Mobilizable', clear: ()=>{ document.getElementById('fMobilize').checked=false; applyFilters(); } });
+
+  const el = document.getElementById('activeFilters');
+  if (chips.length === 0) { el.innerHTML = ''; return; }
+
+  el.innerHTML = chips.map((c,i) =>
+    `<span class="filter-chip">${c.label}<span class="filter-chip__remove" onclick="clearChip(${i})">✕</span></span>`
+  ).join('') + `<button class="btn btn--sm btn--ghost" onclick="resetFilters()">Xóa tất cả</button>`;
+
+  // store clear fns
+  el._clearFns = chips.map(c => c.clear);
+}
+
+function clearChip(i) {
+  const el = document.getElementById('activeFilters');
+  if (el._clearFns && el._clearFns[i]) el._clearFns[i]();
+}
+
+/* ─── Sort ──────────────────────────────────────────────── */
+let lastSortKey = '';
+function sortBy(key) {
+  if (lastSortKey === key) sortDir *= -1;
+  else { sortDir = 1; }
+  lastSortKey = key;
+  sortKey = key;
+
+  document.querySelectorAll('.eng-table th').forEach(th => {
+    th.classList.remove('sorted-asc','sorted-desc');
+  });
+  // find the th with the matching onclick
+  const ths = document.querySelectorAll('.eng-table th');
+  ths.forEach(th => {
+    if (th.getAttribute('onclick') === `sortBy('${key}')`) {
+      th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+    }
+  });
+
+  sortFiltered();
+  render();
+}
+
+function sortFiltered() {
+  filtered.sort((a,b) => {
+    let va, vb;
+    if (sortKey === 'name')     { va = a.name;   vb = b.name; }
+    else if (sortKey==='level') { va = LEVEL_ORDER[a.level]||0; vb = LEVEL_ORDER[b.level]||0; return (vb-va)*sortDir; }
+    else if (sortKey==='status'){ const o={available:0,partial:1,busy:2}; return (o[a.status]-o[b.status])*sortDir; }
+    else if (sortKey==='rating'){ return (b.rating-a.rating)*sortDir; }
+    else if (sortKey==='japanese'){ va=JP_ORDER[a.japanese]||0; vb=JP_ORDER[b.japanese]||0; return (vb-va)*sortDir; }
+    else if (sortKey==='location'){ va=a.location; vb=b.location; }
+    else { va=a[sortKey]||''; vb=b[sortKey]||''; }
+    if (va < vb) return -1 * sortDir;
+    if (va > vb) return  1 * sortDir;
+    return 0;
+  });
+}
+
+/* ─── Select all ────────────────────────────────────────── */
+function toggleAll(cb) {
+  const page = getPage();
+  page.forEach(e => { if (cb.checked) selectedIds.add(e.id); else selectedIds.delete(e.id); });
+  render();
+}
+
+/* ─── Pagination helpers ────────────────────────────────── */
+function getPage(page) {
+  const p = page || currentPage;
+  const start = (p-1)*PAGE_SIZE;
+  return filtered.slice(start, start+PAGE_SIZE);
+}
+
+function totalPages() { return Math.max(1, Math.ceil(filtered.length/PAGE_SIZE)); }
+
+function renderPagination(containerId) {
+  const tp = totalPages();
+  const from = (currentPage-1)*PAGE_SIZE+1;
+  const to   = Math.min(currentPage*PAGE_SIZE, filtered.length);
+  const el   = document.getElementById(containerId);
+  if (!el) return;
+
+  let pages = '';
+  const range = [];
+  for (let i=1; i<=tp; i++) {
+    if (i===1||i===tp||Math.abs(i-currentPage)<=1) range.push(i);
+    else if (range[range.length-1]!=='…') range.push('…');
+  }
+
+  pages = range.map(p =>
+    p === '…'
+      ? `<span class="page-btn page-btn--disabled">…</span>`
+      : `<button class="page-btn ${p===currentPage?'page-btn--active':''}" onclick="goPage(${p})">${p}</button>`
+  ).join('');
+
+  el.innerHTML = `
+    <span>${filtered.length === 0 ? '0 kết quả' : `${from}–${to} / ${filtered.length} kỹ sư`}</span>
+    <div class="pagination__pages">
+      <button class="page-btn ${currentPage===1?'page-btn--disabled':''}" onclick="goPage(${currentPage-1})">◀</button>
+      ${pages}
+      <button class="page-btn ${currentPage===tp?'page-btn--disabled':''}" onclick="goPage(${currentPage+1})">▶</button>
+    </div>
+    <span>${tp} trang</span>`;
+}
+
+function goPage(p) {
+  const tp = totalPages();
+  if (p < 1 || p > tp) return;
+  currentPage = p;
+  render();
+  window.scrollTo({top: 0, behavior:'smooth'});
+}
+
+/* ─── TABLE RENDER ──────────────────────────────────────── */
+function renderTable() {
+  const page = getPage();
+  const WLOAD_COLORS = { 0:'#10B981', 50:'#F59E0B', 100:'#EF4444' };
+
+  document.getElementById('tableBody').innerHTML = page.map(eng => {
+    const topSkills = eng.skills.slice(0,3);
+    const extraCnt  = eng.skills.length - 3;
+    const skillsHtml = topSkills.map(s =>
+      `<span class="tbl-skill-pill">${s.name}</span>`
+    ).join('') + (extraCnt > 0 ? `<span class="tbl-skill-more">+${extraCnt}</span>` : '');
+
+    const certsHtml = eng.certs.length
+      ? eng.certs.slice(0,2).map(c=>`<span class="cert-badge" style="font-size:10px">🏅 ${c}</span>`).join('')
+      + (eng.certs.length>2?`<span class="tbl-skill-more">+${eng.certs.length-2}</span>`:'')
+      : '<span style="font-size:12px;color:var(--color-text-muted)">—</span>';
+
+    const wlColor = WLOAD_COLORS[eng.workload] || '#6366F1';
+    const starsHtml = '★'.repeat(Math.round(eng.rating)) + '☆'.repeat(5-Math.round(eng.rating));
+    const checked = selectedIds.has(eng.id);
+
+    return `
+      <tr onclick="openDetail('${eng.id}')">
+        <td onclick="event.stopPropagation()">
+          <input type="checkbox" ${checked?'checked':''} onchange="toggleOne('${eng.id}',this)"
+            style="accent-color:var(--color-primary-600);width:15px;height:15px">
+        </td>
+        <td>
+          <div class="tbl-eng-name">
+            <div class="tbl-eng-avatar" style="background:${eng.color}">${eng.initials}</div>
+            <div>
+              <div class="tbl-eng-info__name">${eng.name}</div>
+              <div class="tbl-eng-info__id">${eng.id} · ${eng.team}</div>
+            </div>
+          </div>
+        </td>
+        <td>${locationBadge(eng)} ${eng.mobilizable?'<span title="Mobilizable" style="font-size:14px">✈️</span>':''}</td>
+        <td>
+          <span class="badge badge--neutral" style="font-size:11px">${eng.level}</span>
+          <div style="font-size:11px;color:var(--color-text-muted);margin-top:3px">${eng.years} năm</div>
+        </td>
+        <td><div class="tbl-skills">${skillsHtml}</div></td>
+        <td>${statusBadge(eng)}<div style="font-size:11px;color:var(--color-text-muted);margin-top:3px">${availableText(eng)}</div></td>
+        <td>
+          <div class="tbl-workload">
+            <div class="tbl-workload__bar">
+              <div class="tbl-workload__fill" style="width:${eng.workload}%;background:${wlColor}"></div>
+            </div>
+            <div class="tbl-workload__pct">${eng.workload}%</div>
+          </div>
+          ${eng.currentProject?`<div style="font-size:11px;color:var(--color-text-muted);margin-top:3px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${eng.currentProject}</div>`:''}
+        </td>
+        <td>
+          <span class="badge badge--neutral" style="font-size:11px">🇯🇵 ${eng.japanese}</span>
+        </td>
+        <td>
+          <div class="tbl-rating">
+            <span class="tbl-rating__stars">${starsHtml}</span>
+            <span class="tbl-rating__val">${eng.rating}</span>
+          </div>
+        </td>
+        <td><div style="display:flex;flex-wrap:wrap;gap:4px">${certsHtml}</div></td>
+        <td onclick="event.stopPropagation()">
+          <div style="display:flex;gap:6px">
+            <button class="btn btn--sm btn--secondary" onclick="openDetail('${eng.id}')">👁</button>
+            <button class="btn btn--sm btn--ghost" onclick="showToast('Phân công dự án cho ${eng.name}','info')">📌</button>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  renderPagination('pagination');
+}
+
+/* ─── CARD RENDER ───────────────────────────────────────── */
+function renderCards() {
+  const page = getPage();
+  document.getElementById('cardGrid').innerHTML = page.map(eng => {
+    const skillsHtml = eng.skills.slice(0,4).map(s =>
+      `<span class="skill-tag">${s.name} <span style="color:var(--color-primary-400)">L${s.level}</span></span>`
+    ).join('') + (eng.skills.length>4?`<span class="tbl-skill-more">+${eng.skills.length-4}</span>`:'');
+
+    const certsHtml = eng.certs.length
+      ? eng.certs.slice(0,2).map(c=>`<span class="cert-badge">🏅 ${c}</span>`).join('')
+      : '';
+
+    const projectLine = eng.currentProject
+      ? `📌 ${eng.currentProject}`
+      : '✅ Không có dự án hiện tại';
+
+    return `
+      <div class="eng-card" onclick="openDetail('${eng.id}')">
+        <div class="eng-card__top">
+          <div class="eng-card__avatar" style="background:${eng.color}">${eng.initials}</div>
+          <div class="eng-card__meta">
+            <div class="eng-card__name">${eng.name}</div>
+            <div class="eng-card__badges">
+              ${locationBadge(eng)}
+              <span class="badge badge--neutral" style="font-size:11px">${eng.level}</span>
+              ${statusBadge(eng)}
+              ${eng.mobilizable?'<span class="badge badge--info" style="font-size:10px">✈️ Mobilizable</span>':''}
+            </div>
+            <div class="eng-card__info">
+              <span>⏱ ${eng.years} năm KN</span>
+              <span>🇯🇵 ${eng.japanese}</span>
+              <span>⭐ ${eng.rating}</span>
+            </div>
+          </div>
+        </div>
+        <div class="eng-card__divider"></div>
+        <div class="eng-card__skills">${skillsHtml}${certsHtml}</div>
+        <div class="eng-card__bottom">
+          <div class="eng-card__project">${projectLine}</div>
+          <button class="btn btn--sm btn--secondary" onclick="event.stopPropagation();openDetail('${eng.id}')">Xem →</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Card pagination
+  const tp = totalPages();
+  const from = (currentPage-1)*PAGE_SIZE+1;
+  const to   = Math.min(currentPage*PAGE_SIZE, filtered.length);
+  document.getElementById('cardPagination').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="page-btn ${currentPage===1?'page-btn--disabled':''}" onclick="goPage(${currentPage-1})">◀</button>
+      <span style="font-size:13px;color:var(--color-text-muted)">${from}–${to} / ${filtered.length}</span>
+      <button class="page-btn ${currentPage===tp?'page-btn--disabled':''}" onclick="goPage(${currentPage+1})">▶</button>
+    </div>`;
+}
+
+/* ─── Main render dispatcher ────────────────────────────── */
+function render() {
+  renderStats();
+  if (currentView === 'table') renderTable();
+  else renderCards();
+}
+
+/* ─── View switch ───────────────────────────────────────── */
+function switchView(v) {
+  currentView = v;
+  document.getElementById('tableView').style.display = v==='table' ? 'block' : 'none';
+  document.getElementById('cardView').style.display  = v==='card'  ? 'block' : 'none';
+  document.getElementById('btnTable').classList.toggle('eng-view-btn--active', v==='table');
+  document.getElementById('btnCard').classList.toggle('eng-view-btn--active',  v==='card');
+  render();
+}
+
+/* ─── Checkbox select ───────────────────────────────────── */
+function toggleOne(id, cb) {
+  if (cb.checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+}
+
+/* ─── Detail Panel ──────────────────────────────────────── */
+function openDetail(id) {
+  const eng = ENGINEERS.find(e => e.id === id);
+  if (!eng) return;
+
+  // Hero
+  document.getElementById('detailHero').innerHTML = `
+    <button class="detail-panel__close" onclick="closeDetail()">✕</button>
+    <div class="detail-panel__avatar" style="background:rgba(255,255,255,0.2)">${eng.initials}</div>
+    <div class="detail-panel__name">${eng.name}</div>
+    <div class="detail-panel__sub">${eng.id} · ${eng.level} · ${eng.team}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${locationBadge(eng)}
+      ${statusBadge(eng)}
+      ${eng.mobilizable?'<span class="badge badge--info">✈️ Mobilizable</span>':''}
+    </div>`;
+
+  // Body
+  const starsHtml = Array.from({length:5},(_,i)=>`<span style="color:${i<Math.round(eng.rating)?'#F59E0B':'#D1D5DB'}">★</span>`).join('');
+  const certsHtml = eng.certs.length
+    ? eng.certs.map(c=>`<span class="cert-badge">🏅 ${c}</span>`).join(' ')
+    : '<span style="color:var(--color-text-muted);font-size:13px">Chưa có chứng chỉ</span>';
+
+  const skillsHtml = eng.skills.map(s => `
+    <div class="detail-skill-item">
+      <div class="detail-skill-item__name">${s.name}</div>
+      <div class="stars">${Array.from({length:5},(_,i)=>`<span class="star ${i<s.level?'star--filled':''}">★</span>`).join('')}</div>
+      <div class="detail-skill-item__years">${s.years} năm</div>
+    </div>`).join('');
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-section">
+      <div class="detail-section__title">Thông tin cơ bản</div>
+      <div class="detail-info-grid">
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Cấp bậc</div>
+          <div class="detail-info-item__value">${eng.level}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Kinh nghiệm</div>
+          <div class="detail-info-item__value">${eng.years} năm</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Bucho</div>
+          <div class="detail-info-item__value">${eng.bucho}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Workload</div>
+          <div class="detail-info-item__value">${eng.workload}%</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Tiếng Nhật</div>
+          <div class="detail-info-item__value">🇯🇵 ${eng.japanese}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Tiếng Anh</div>
+          <div class="detail-info-item__value">🇬🇧 ${eng.english}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Rating</div>
+          <div class="detail-info-item__value">${starsHtml} ${eng.rating}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="detail-info-item__label">Rảnh từ</div>
+          <div class="detail-info-item__value">${availableText(eng)}</div>
+        </div>
+      </div>
+      ${eng.currentProject?`<div style="margin-top:12px;padding:10px 14px;background:var(--color-warning-bg);border:1px solid var(--color-warning-border);border-radius:10px;font-size:13px"><strong>📌 Đang làm:</strong> ${eng.currentProject}</div>`:''}
+      ${eng.note?`<div style="margin-top:10px;padding:10px 14px;background:var(--color-gray-50);border:1px solid var(--color-border);border-radius:10px;font-size:13px;color:var(--color-text-secondary)">💬 ${eng.note}</div>`:''}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section__title">Skills (${eng.skills.length})</div>
+      ${skillsHtml}
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section__title">Chứng chỉ (${eng.certs.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${certsHtml}</div>
+    </div>
+
+    ${eng.mobilizable ? `
+    <div class="detail-section">
+      <div class="detail-section__title">✈️ Mobilization</div>
+      <div style="padding:12px;background:var(--color-info-bg);border:1px solid #BFDBFE;border-radius:12px;font-size:13px">
+        <strong>Sẵn sàng onsite Nhật Bản</strong><br>
+        <span style="color:var(--color-text-muted)">Visa: ${eng.visaStatus==='active'?'✅ Còn hạn':'🔄 Cần xin mới (~3 tuần)'}</span>
+      </div>
+    </div>` : ''}`;
+
+  document.getElementById('detailOverlay').classList.add('detail-overlay--open');
+  setTimeout(() => document.getElementById('detailPanel').classList.add('detail-panel--open'), 10);
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('detail-panel--open');
+  document.getElementById('detailOverlay').classList.remove('detail-overlay--open');
+}
+
+/* ─── Export ────────────────────────────────────────────── */
+function exportList() {
+  showToast(`Đang xuất ${filtered.length} kỹ sư...`, 'info');
+  setTimeout(() => showToast('Export Excel hoàn tất!', 'success'), 1500);
+}
+
+/* ─── Init ──────────────────────────────────────────────── */
+document.getElementById('countTotal').textContent = allEngineers.length;
+applyFilters();
+</script>
+</body>
+</html>

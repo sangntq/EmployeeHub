@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Search · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/search.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>AI Search</span>
+          </div>
+          <h1 class="page-header__title">🤖 AI Engineer Search</h1>
+          <p class="page-header__subtitle">Paste yêu cầu dự án của khách hàng — AI sẽ tự phân tích và tìm kỹ sư phù hợp</p>
+        </div>
+      </div>
+
+      <!-- Search Hero -->
+      <div class="search-hero">
+        <div class="search-hero__label">✨ Powered by Claude AI</div>
+        <h2 class="search-hero__title">Paste yêu cầu dự án vào đây</h2>
+        <p class="search-hero__desc">Hỗ trợ tiếng Nhật 🇯🇵 · Tiếng Anh 🇬🇧 · Tiếng Việt 🇻🇳</p>
+
+        <div class="search-textarea-wrap">
+          <textarea id="jobDescription" class="search-textarea"
+            placeholder="Ví dụ:&#10;プロジェクト概要：基幹システムのリプレイス&#10;【必要スキル】&#10;- Java (Spring Boot) 5年以上のシニアエンジニア × 2名&#10;- React経験3年以上 × 1名&#10;- AWSの経験者優遇（SAA資格あれば尚可）&#10;【期間】2026年4月〜2027年3月&#10;【日本語要件】N2以上"></textarea>
+        </div>
+
+        <div class="search-hero__actions">
+          <div class="search-examples">
+            <span style="color:rgba(255,255,255,0.6);font-size:12px">Thử:</span>
+            <button class="search-example-chip" onclick="fillExample('java')">Java Senior team</button>
+            <button class="search-example-chip" onclick="fillExample('react')">React + AWS</button>
+            <button class="search-example-chip" onclick="fillExample('devops')">DevOps Engineer</button>
+            <button class="search-example-chip" onclick="fillExample('ai')">AI/ML Project</button>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <button class="btn btn--ghost" style="color:rgba(255,255,255,0.7);font-size:13px" onclick="clearSearch()">🗑 Xóa</button>
+            <button class="btn--analyze" onclick="startAnalysis()">
+              <span id="analyzeIcon">🤖</span>
+              <span id="analyzeText">Phân tích & Tìm kiếm</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Selector -->
+      <div class="location-selector">
+        <span style="font-size:13px;font-weight:600;color:var(--color-text-secondary);align-self:center">Tìm trong:</span>
+        <label class="location-check">
+          <input type="checkbox" id="chkVN" checked> 🇻🇳 Việt Nam (Offshore / Mobilizable)
+        </label>
+        <label class="location-check">
+          <input type="checkbox" id="chkJP" checked> 🇯🇵 Nhật Bản (Onsite JP hiện tại)
+        </label>
+        <label class="location-check">
+          <input type="checkbox" id="chkMobile" checked> ✈️ Mobilizable only
+        </label>
+      </div>
+
+      <!-- Loading State (hidden initially) -->
+      <div id="loadingState" class="hidden">
+        <div class="loading-steps">
+          <div style="font-size:32px;margin-bottom:16px">🤖</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--color-primary-700)">AI đang phân tích...</div>
+          <div style="font-size:14px;color:var(--color-text-muted);margin-bottom:24px">Vui lòng đợi trong giây lát</div>
+
+          <div style="max-width:400px;margin:0 auto">
+            <div class="loading-progress">
+              <div class="loading-progress__bar" id="progressBar" style="width:0%"></div>
+            </div>
+
+            <div id="loadingSteps" style="text-align:left;margin-top:16px">
+              <div class="loading-step" id="step1"><div class="loading-step__icon">⏳</div> Đọc yêu cầu dự án...</div>
+              <div class="loading-step" id="step2"><div class="loading-step__icon">○</div> Nhận diện ngôn ngữ</div>
+              <div class="loading-step" id="step3"><div class="loading-step__icon">○</div> Trích xuất skills & yêu cầu</div>
+              <div class="loading-step" id="step4"><div class="loading-step__icon">○</div> Phân tích timeline & điều kiện</div>
+              <div class="loading-step" id="step5"><div class="loading-step__icon">○</div> Tìm kiếm & xếp hạng kỹ sư</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results (hidden initially) -->
+      <div id="resultsSection" class="hidden">
+
+        <!-- Parsed Requirements -->
+        <div class="parsed-box">
+          <div class="parsed-box__header">
+            <div class="parsed-box__title">
+              ✅ AI đã hiểu yêu cầu như sau
+            </div>
+            <button class="btn btn--sm btn--secondary" onclick="resetSearch()">✏️ Sửa lại</button>
+          </div>
+
+          <div class="parsed-box__project" id="parsedProject"></div>
+
+          <div class="parsed-requirements" id="parsedRequirements"></div>
+
+          <div style="display:flex;gap:12px;margin-top:16px">
+            <button class="btn btn--primary" onclick="confirmSearch()">✅ Đúng rồi, tìm kiếm</button>
+            <button class="btn btn--secondary" onclick="resetSearch()">✏️ Chỉnh sửa yêu cầu</button>
+          </div>
+        </div>
+
+        <!-- Results Header -->
+        <div class="results-header">
+          <div class="results-count">Tìm được <span id="totalCount">0</span> kỹ sư phù hợp</div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <select class="form-control form-select" style="width:auto;padding:6px 32px 6px 12px;font-size:13px" onchange="sortResults(this.value)">
+              <option value="match">Sắp xếp: % Phù hợp</option>
+              <option value="available">Rảnh sớm nhất</option>
+              <option value="level">Cấp bậc cao nhất</option>
+            </select>
+            <button class="btn btn--success" id="proposalBtn" onclick="createProposal()">📋 Tạo Proposal (tất cả)</button>
+            <button class="btn btn--secondary" onclick="exportExcel()">📊 Export Excel</button>
+          </div>
+        </div>
+
+        <!-- Result Groups by Position -->
+        <div id="resultGroups"></div>
+
+        <!-- AI Suggestion -->
+        <div class="ai-suggestion" id="aiSuggestion">
+          <div class="ai-suggestion__header">💡 AI gợi ý</div>
+          <div class="ai-suggestion__items" id="aiSuggestionItems"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+  document.body.dataset.role = 'sales';
+  renderSidebar('sales');
+  attachLangSelector();
+
+  // Example texts
+  const EXAMPLES = {
+    java: `プロジェクト概要：基幹システムのJavaリプレイス
+
+【必要スキル】
+- Java (Spring Boot) 経験5年以上のシニアエンジニア × 2名
+- React経験3年以上のフロントエンドエンジニア × 1名
+- AWS設計・構築経験あること（SAA資格あれば尚可）
+- チームリード経験があれば優遇
+
+【期間】2026年4月〜2027年3月（12ヶ月）
+【日本語要件】ビジネスレベル（N2以上）
+【勤務地】東京（週3リモート可）`,
+
+    react: `We are looking for:
+- 2 Senior React developers (3+ years TypeScript, Next.js preferred)
+- 1 Node.js backend developer (3+ years, AWS experience)
+- AWS SAA certification is a plus
+- N2 Japanese required for client meetings
+- Start date: April 2026, 6 months project`,
+
+    devops: `DevOpsエンジニア急募！
+・Kubernetes/EKS運用経験 3年以上
+・Terraform/Ansible経験
+・AWS上級者（SAP保有者優遇）
+・CI/CDパイプライン構築経験
+・開始：即日〜 / N2以上`,
+
+    ai: `AI/MLプロジェクト
+- Python + TensorFlow/PyTorch Senior × 1名
+- MLOps経験者（AWS SageMaker / Kubeflow）
+- データエンジニア（Spark, Airflow）× 1名
+- プロジェクト期間：6ヶ月
+- 日本語：N2以上優遇`,
+  };
+
+  // Parsed data (simulated AI output)
+  const PARSED_DATA = {
+    java: {
+      project: '📋 Hệ thống ERP (Java Replace)  ·  12 tháng  ·  Tokyo (Hybrid)  ·  Bắt đầu: 04/2026',
+      roles: [
+        {
+          title: 'Java Senior Engineer', count: 2,
+          reqs: ['Java/Spring Boot ≥ 5 năm', 'AWS kinh nghiệm (SAA ưu tiên)', 'Tiếng Nhật N2+', 'Ưu tiên: Team Lead kinh nghiệm'],
+          matches: [
+            { eng: ENGINEERS[0], pct: 97, checks: [
+              { ok: true,  text: 'Java Lv.5 · 6 năm' },
+              { ok: true,  text: 'AWS SAA ✅' },
+              { ok: true,  text: 'Tiếng Nhật N2' },
+              { ok: true,  text: 'Đã lead 2 dự án' },
+              { ok: true,  text: '🟢 Rảnh từ 01/03 (sớm 1 tháng)' },
+            ]},
+            { eng: ENGINEERS[4], pct: 93, checks: [
+              { ok: true,  text: 'Java Lv.5 · 8 năm' },
+              { ok: true,  text: 'AWS SAP ✅✅' },
+              { ok: true,  text: 'Tiếng Nhật N1' },
+              { ok: true,  text: 'Lead/Architect level' },
+              { ok: 'warn',  text: '🟡 50% rảnh – bàn thêm với DM' },
+            ]},
+            { eng: ENGINEERS[5], pct: 91, checks: [
+              { ok: true,  text: 'Java Lv.5 · 5 năm' },
+              { ok: true,  text: 'AWS SAA ✅' },
+              { ok: true,  text: 'Tiếng Nhật N2' },
+              { ok: 'warn',  text: '⚠️ Chưa có Lead kinh nghiệm' },
+              { ok: true,  text: '🟢 Rảnh ngay · ✈️ Mobilizable' },
+            ]},
+            { eng: ENGINEERS[3], pct: 79, checks: [
+              { ok: true,  text: 'Java Lv.4 · 4 năm' },
+              { ok: true,  text: 'AWS SAA ✅' },
+              { ok: true,  text: 'Tiếng Nhật N2' },
+              { ok: false, text: '❌ Chưa có Lead kinh nghiệm' },
+              { ok: false, text: '🔴 Bận đến 30/04 (trễ 1 tháng)' },
+            ]},
+          ]
+        },
+        {
+          title: 'React Frontend Engineer', count: 1,
+          reqs: ['React ≥ 3 năm', 'Tiếng Nhật N2+'],
+          matches: [
+            { eng: ENGINEERS[1], pct: 95, checks: [
+              { ok: true,  text: 'React Lv.5 · 5 năm' },
+              { ok: true,  text: 'TypeScript ✅' },
+              { ok: true,  text: 'Tiếng Nhật N2 Business' },
+              { ok: 'warn',  text: '🟡 50% rảnh – có thể 100% từ 15/03' },
+            ]},
+            { eng: ENGINEERS[6], pct: 88, checks: [
+              { ok: true,  text: 'React Lv.5 · 6 năm' },
+              { ok: true,  text: 'Next.js, TypeScript ✅' },
+              { ok: true,  text: 'Tiếng Nhật N2' },
+              { ok: true,  text: '🟢 Rảnh ngay · ✈️ Mobilizable VN→JP' },
+            ]},
+          ]
+        }
+      ],
+      suggestions: [
+        '💡 Java Senior: Hoang Thi Yen (ENG-005) là Lead/Architect tốt nhất nhưng đang 50% – đề xuất trao đổi với DM.',
+        '💡 React: Dang Thi Lan (ENG-102) tại VN sẵn sàng mobilize → JP, cần ~3 tuần xin visa.',
+        '💡 Nếu KH muốn bắt đầu sớm hơn 04/2026, Nguyen Van An sẵn sàng từ 01/03.',
+      ]
+    }
+  };
+
+  let currentParsed = null;
+  let selectedEngineers = new Set();
+
+  function fillExample(type) {
+    document.getElementById('jobDescription').value = EXAMPLES[type] || EXAMPLES.java;
+  }
+
+  function clearSearch() {
+    document.getElementById('jobDescription').value = '';
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('resultsSection').classList.add('hidden');
+    selectedEngineers.clear();
+  }
+
+  function resetSearch() {
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('loadingState').classList.add('hidden');
+    selectedEngineers.clear();
+  }
+
+  async function startAnalysis() {
+    const text = document.getElementById('jobDescription').value.trim();
+    if (!text) {
+      showToast('Vui lòng nhập yêu cầu dự án!', 'warning');
+      return;
+    }
+
+    // Hide results, show loading
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('analyzeText').textContent = 'Đang phân tích...';
+    document.getElementById('analyzeIcon').textContent = '⏳';
+
+    // Simulate steps
+    const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+    const pcts  = [20, 40, 60, 80, 100];
+
+    for (let i = 0; i < steps.length; i++) {
+      await delay(600);
+      document.getElementById('progressBar').style.width = pcts[i] + '%';
+      if (i > 0) {
+        const prev = document.getElementById(steps[i-1]);
+        prev.classList.remove('loading-step--active');
+        prev.classList.add('loading-step--done');
+        prev.querySelector('.loading-step__icon').textContent = '✅';
+      }
+      const cur = document.getElementById(steps[i]);
+      cur.classList.add('loading-step--active');
+      cur.querySelector('.loading-step__icon').innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div>';
+    }
+
+    await delay(700);
+    // Mark last done
+    const last = document.getElementById(steps[steps.length-1]);
+    last.classList.remove('loading-step--active');
+    last.classList.add('loading-step--done');
+    last.querySelector('.loading-step__icon').textContent = '✅';
+
+    await delay(300);
+
+    // Show results
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('analyzeText').textContent = 'Phân tích & Tìm kiếm';
+    document.getElementById('analyzeIcon').textContent = '🤖';
+
+    // Use java parsed data as demo
+    currentParsed = PARSED_DATA.java;
+    renderResults(currentParsed);
+    document.getElementById('resultsSection').classList.remove('hidden');
+    showToast('Tìm được kỹ sư phù hợp!', 'success');
+  }
+
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function renderResults(data) {
+    // Parsed project
+    document.getElementById('parsedProject').textContent = data.project;
+
+    // Parsed roles
+    document.getElementById('parsedRequirements').innerHTML = data.roles.map(role => `
+      <div class="parsed-role-card">
+        <div class="parsed-role-card__title">
+          ${role.title}
+          <span class="parsed-role-card__count">× ${role.count}</span>
+        </div>
+        <div class="parsed-role-card__reqs">
+          ${role.reqs.map(r => `
+            <div class="parsed-req">
+              <span class="parsed-req__dot"></span>
+              <span>${r}</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+
+    // Store results for proposal creation
+    window.lastSearchResults = data.roles;
+
+    // Count total
+    const total = data.roles.reduce((sum, r) => sum + r.matches.length, 0);
+    document.getElementById('totalCount').textContent = total;
+
+    // Result groups
+    let groupsHtml = '';
+    data.roles.forEach((role, ri) => {
+      const selectedCount = role.matches.filter(m => selectedEngineers.has(m.eng.id)).length;
+      groupsHtml += `
+        <div class="result-group">
+          <div class="result-group__header">
+            <span>📌 Vị trí ${ri+1}: ${role.title}</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="color:var(--color-text-muted);font-size:12px">Cần ${role.count} người · Đã chọn ${selectedCount}/${role.count}</span>
+              <span class="badge badge--primary">${role.matches.length} KS phù hợp</span>
+            </div>
+          </div>
+          <div class="result-group__body">
+            ${role.matches.map(m => renderResultItem(m)).join('')}
+          </div>
+        </div>`;
+    });
+    document.getElementById('resultGroups').innerHTML = groupsHtml;
+
+    // AI suggestions
+    document.getElementById('aiSuggestionItems').innerHTML = data.suggestions.map(s => `
+      <div class="ai-suggestion__item">
+        <span style="flex-shrink:0;margin-top:1px">•</span>
+        <span>${s}</span>
+      </div>`).join('');
+  }
+
+  function renderResultItem(m) {
+    const { eng, pct, checks } = m;
+    const isSelected = selectedEngineers.has(eng.id);
+    const checksHtml = checks.map(c => `
+      <div class="req-check-item ${c.ok === true ? 'req-check-item--ok' : c.ok === 'warn' ? 'req-check-item--warn' : 'req-check-item--fail'}">
+        <span class="req-icon">${c.ok === true ? '✅' : c.ok === 'warn' ? '⚠️' : '❌'}</span>
+        <span>${c.text}</span>
+      </div>`).join('');
+
+    return `
+      <div class="engineer-result-item" id="result-${eng.id}">
+        <div class="engineer-result-item__check">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect('${eng.id}', this)">
+        </div>
+        <div class="engineer-item__avatar" style="background:${eng.color};flex-shrink:0">${eng.initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="flex items-center gap-2">
+            <span class="engineer-item__name">${eng.name}</span>
+            ${locationBadge(eng)}
+            ${eng.mobilizable ? '<span class="badge badge--info">✈️ Mobilizable</span>' : ''}
+          </div>
+          <div class="engineer-item__meta">
+            <span class="text-xs text-muted font-semibold">${eng.level} · ${eng.years} năm</span>
+            <span class="text-xs text-muted">🇯🇵 ${eng.japanese}</span>
+            ${statusBadge(eng)}
+          </div>
+          <div class="requirement-check">${checksHtml}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+          <div class="match-score">
+            <div class="match-score__pct">${pct}%</div>
+            <div class="match-score__bar"><div class="match-score__fill" style="width:${pct}%"></div></div>
+            <div class="match-score__label">phù hợp</div>
+          </div>
+          <button class="btn btn--sm btn--secondary">👁 Xem profile</button>
+        </div>
+      </div>`;
+  }
+
+  function toggleSelect(id, checkbox) {
+    if (checkbox.checked) selectedEngineers.add(id);
+    else selectedEngineers.delete(id);
+    updateSelectedCount();
+    // Update proposal button label
+    const btn = document.getElementById('proposalBtn');
+    if (btn) {
+      btn.textContent = selectedEngineers.size > 0
+        ? `📋 Tạo Proposal (${selectedEngineers.size} KS)`
+        : '📋 Tạo Proposal (tất cả)';
+    }
+  }
+
+  function updateSelectedCount() {
+    // Update group headers
+    if (currentParsed) {
+      currentParsed.roles.forEach((role, ri) => {
+        const selected = role.matches.filter(m => selectedEngineers.has(m.eng.id)).length;
+        const headers = document.querySelectorAll('.result-group__header');
+        if (headers[ri]) {
+          const span = headers[ri].querySelector('span:last-child');
+          if (span) span.textContent = `Cần ${role.count} người · Đã chọn ${selected}/${role.count}`;
+        }
+      });
+    }
+  }
+
+  function confirmSearch() {
+    if (currentParsed) {
+      showToast('Đã xác nhận! Kết quả bên dưới.', 'success');
+    }
+  }
+
+  function createProposal() {
+    if (!window.lastSearchResults) {
+      showToast('Vui lòng thực hiện tìm kiếm trước!', 'warning');
+      return;
+    }
+
+    // Collect engineers: if none checked → use all results (top match per role)
+    const selected = [];
+    window.lastSearchResults.forEach(role => {
+      role.matches.forEach(m => {
+        const shouldInclude = selectedEngineers.size === 0
+          ? !selected.find(e => e.id === m.eng.id)   // include all unique
+          : (selectedEngineers.has(m.eng.id) && !selected.find(e => e.id === m.eng.id));
+        if (shouldInclude) {
+          selected.push({ ...m.eng, matchPct: m.pct });
+        }
+      });
+    });
+
+    if (selected.length === 0) {
+      showToast('Không có kỹ sư nào trong kết quả tìm kiếm!', 'error');
+      return;
+    }
+
+    showProposalModal(selected);
+  }
+
+  function showProposalModal(engineers) {
+    // Store for print function
+    window._currentProposalEngineers = engineers;
+
+    // Remove existing modal if any
+    const existing = document.getElementById('proposalModal');
+    if (existing) existing.remove();
+
+    const engsHtml = engineers.map((eng, idx) => `
+      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+          <div style="width:52px;height:52px;border-radius:50%;background:${eng.color};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;flex-shrink:0">${eng.initials}</div>
+          <div style="flex:1">
+            <div style="font-size:17px;font-weight:700;color:#111">${idx+1}. ${eng.name}</div>
+            <div style="font-size:13px;color:#6b7280;margin-top:2px">${eng.id} · ${eng.level} · ${eng.years} năm kinh nghiệm</div>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+              ${eng.location === 'jp'
+                ? '<span style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">🇯🇵 Nhật Bản</span>'
+                : '<span style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">🇻🇳 Việt Nam</span>'}
+              ${eng.matchPct ? `<span style="background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">✓ ${eng.matchPct}% phù hợp</span>` : ''}
+              ${eng.mobilizable ? '<span style="background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">✈️ Onsite JP</span>' : ''}
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div><div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:4px">Tiếng Nhật</div><div style="font-size:13px;font-weight:600">🇯🇵 ${eng.japanese}</div></div>
+          <div><div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:4px">Tiếng Anh</div><div style="font-size:13px;font-weight:600">🇬🇧 ${eng.english}</div></div>
+          <div><div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:4px">Team</div><div style="font-size:13px;font-weight:600">${eng.team}</div></div>
+          <div><div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:4px">Rảnh từ</div><div style="font-size:13px;font-weight:600">${availableText(eng)}</div></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:6px">Kỹ năng chính</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${eng.skills.slice(0,6).map(s => `<span style="background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600">${s.name} Lv.${s.level}</span>`).join('')}</div>
+        </div>
+        ${eng.certs.length > 0 ? `
+        <div>
+          <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;font-weight:600;margin-bottom:6px">Chứng chỉ</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${eng.certs.map(c => `<span style="background:#FFFBEB;color:#92400E;border:1px solid #FDE68A;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600">🏅 ${c}</span>`).join('')}</div>
+        </div>` : ''}
+      </div>`).join('');
+
+    const today = new Date().toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+    const modal = document.createElement('div');
+    modal.id = 'proposalModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;backdrop-filter:blur(4px)';
+
+    modal.innerHTML = `
+      <div style="background:white;border-radius:20px;width:100%;max-width:760px;box-shadow:0 25px 60px rgba(0,0,0,0.3);overflow:hidden">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#4338CA,#6366F1);padding:28px 32px;position:relative">
+          <button onclick="document.getElementById('proposalModal').remove()" style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer">✕</button>
+          <div style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">📋 Đề xuất Kỹ sư</div>
+          <div style="color:white;font-size:24px;font-weight:800;margin-bottom:4px">Engineer Proposal</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:14px">Ngày: ${today} · ${engineers.length} kỹ sư được đề xuất</div>
+        </div>
+
+        <!-- Body -->
+        <div id="proposalPrintArea" style="padding:32px">
+          <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <label style="font-size:11px;color:#6B7280;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px">Khách hàng</label>
+              <input id="propClientName" type="text" placeholder="Nhập tên khách hàng..." style="border:1px solid #D1D5DB;border-radius:8px;padding:8px 12px;font-size:14px;width:100%;outline:none;font-family:inherit">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#6B7280;font-weight:600;text-transform:uppercase;display:block;margin-bottom:4px">Tên dự án</label>
+              <input id="propProjectName" type="text" placeholder="Nhập tên dự án..." style="border:1px solid #D1D5DB;border-radius:8px;padding:8px 12px;font-size:14px;width:100%;outline:none;font-family:inherit">
+            </div>
+          </div>
+
+          <div style="font-size:13px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #E5E7EB">
+            Danh sách kỹ sư đề xuất (${engineers.length} người)
+          </div>
+
+          ${engsHtml}
+        </div>
+
+        <!-- Footer -->
+        <div style="padding:20px 32px;border-top:1px solid #E5E7EB;background:#F9FAFB;display:flex;gap:12px;justify-content:flex-end">
+          <button onclick="document.getElementById('proposalModal').remove()" style="padding:10px 20px;border:1px solid #D1D5DB;border-radius:10px;background:white;font-size:14px;font-weight:600;cursor:pointer;color:#374151">Đóng</button>
+          <button onclick="printProposal()" style="padding:10px 20px;border-radius:10px;background:#4338CA;color:white;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:8px">🖨️ In / Xuất PDF</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  }
+
+  function printProposal() {
+    const client = document.getElementById('propClientName').value || 'Khách hàng';
+    const project = document.getElementById('propProjectName').value || 'Dự án';
+    // Build clean printable HTML without input fields
+    const engs = _currentProposalEngineers || [];
+    const today = new Date().toLocaleDateString('vi-VN');
+
+    const engsPrintHtml = engs.map((eng, idx) => `
+      <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:12px;break-inside:avoid;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="width:44px;height:44px;border-radius:50%;background:${eng.color};display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;flex-shrink:0">${eng.initials}</div>
+          <div>
+            <div style="font-size:16px;font-weight:700">${idx+1}. ${eng.name} — ${eng.id}</div>
+            <div style="font-size:12px;color:#6b7280">${eng.level} · ${eng.years} năm · ${eng.location === 'jp' ? '🇯🇵 Nhật Bản' : '🇻🇳 Việt Nam'} ${eng.matchPct ? ' · ✓ '+eng.matchPct+'% match' : ''}</div>
+          </div>
+        </div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tr><td style="padding:3px 8px;color:#6b7280;width:120px">Tiếng Nhật</td><td style="padding:3px 8px;font-weight:600">${eng.japanese}</td><td style="padding:3px 8px;color:#6b7280;width:120px">Tiếng Anh</td><td style="padding:3px 8px;font-weight:600">${eng.english}</td></tr>
+          <tr><td style="padding:3px 8px;color:#6b7280">Team</td><td style="padding:3px 8px;font-weight:600">${eng.team}</td><td style="padding:3px 8px;color:#6b7280">Rảnh từ</td><td style="padding:3px 8px;font-weight:600">${availableText(eng)}</td></tr>
+        </table>
+        <div style="margin-top:8px;font-size:12px"><strong>Kỹ năng:</strong> ${eng.skills.map(s => s.name+' Lv.'+s.level).join(' · ')}</div>
+        ${eng.certs.length ? '<div style="margin-top:4px;font-size:12px"><strong>Chứng chỉ:</strong> '+eng.certs.join(', ')+'</div>' : ''}
+      </div>`).join('');
+
+    const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Proposal - ${client} - ${project}</title>
+    <style>
+      body { font-family: -apple-system, 'Segoe UI', sans-serif; padding: 32px; color: #111; font-size: 14px; }
+      @media print { @page { margin: 15mm; } }
+    </style></head><body>
+    <div style="text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:3px solid #4338CA">
+      <div style="font-size:26px;font-weight:800;color:#4338CA">Engineer Proposal</div>
+      <div style="color:#374151;margin-top:6px;font-size:14px">Khách hàng: <strong>${client}</strong> &nbsp;|&nbsp; Dự án: <strong>${project}</strong></div>
+      <div style="color:#6B7280;margin-top:4px;font-size:12px">Ngày lập: ${today} &nbsp;|&nbsp; ${engs.length} kỹ sư được đề xuất</div>
+    </div>
+    ${engsPrintHtml}
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center">
+      Tài liệu này được tạo bởi EngineerHub &nbsp;·&nbsp; ${today}
+    </div>
+    <script>window.onload=function(){window.print()}<\/script>
+    </body></html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) {
+      showToast('Trình duyệt chặn popup. Hãy cho phép popup và thử lại!', 'error');
+      return;
+    }
+    win.document.write(htmlContent);
+    win.document.close();
+  }
+
+  function exportExcel() {
+    showToast('Đang xuất Excel...', 'info');
+    setTimeout(() => showToast('Xuất Excel hoàn tất!', 'success'), 1500);
+  }
+
+  function sortResults(by) {
+    showToast('Đã sắp xếp kết quả', 'info');
+  }
+</script>
+</body>
+</html>

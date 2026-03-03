@@ -1,0 +1,270 @@
+/* Availability Timeline Page */
+
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.month-nav__btn {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
+}
+
+.month-nav__btn:hover { background: var(--color-gray-100); color: var(--color-primary-600); }
+
+.month-nav__label {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  min-width: 160px;
+  text-align: center;
+}
+
+/* Summary cards */
+.availability-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.avail-summary-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-xs);
+}
+
+.avail-summary-card__icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-xl);
+  flex-shrink: 0;
+}
+
+.avail-summary-card__value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: 1.1;
+}
+
+.avail-summary-card__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* Gantt Table */
+.gantt-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.gantt-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-gray-50);
+  flex-wrap: wrap;
+}
+
+.gantt-table-wrap {
+  overflow-x: auto;
+}
+
+.gantt-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.gantt-table th {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.gantt-table th.month-header {
+  text-align: center;
+  border-left: 1px solid var(--color-border);
+  background: white;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary-700);
+  letter-spacing: 0.08em;
+}
+
+.gantt-table th.month-header--current {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.gantt-table td {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.gantt-table tr:last-child td { border-bottom: none; }
+.gantt-table tr:hover td { background: rgba(79, 70, 229, 0.02); }
+
+.gantt-engineer-cell {
+  padding: var(--space-3) var(--space-4);
+  min-width: 240px;
+  border-right: 2px solid var(--color-border);
+}
+
+.gantt-engineer-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gantt-avatar {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: var(--font-bold);
+  color: white;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.gantt-name { font-size: 13px; font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.gantt-skills { font-size: 11px; color: var(--color-text-muted); margin-top: 1px; }
+
+.gantt-month-cell {
+  padding: var(--space-2);
+  border-left: 1px solid var(--color-border);
+  text-align: center;
+  position: relative;
+  min-width: 110px;
+}
+
+.gantt-bar {
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0 var(--space-2);
+}
+
+.gantt-bar:hover { opacity: 0.85; }
+
+.gantt-bar--available {
+  background: var(--color-success-bg);
+  color: #065F46;
+  border: 1px solid var(--color-success-border);
+}
+
+.gantt-bar--busy-100 {
+  background: var(--color-danger-bg);
+  color: #991B1B;
+  border: 1px solid var(--color-danger-border);
+}
+
+.gantt-bar--busy-50 {
+  background: var(--color-warning-bg);
+  color: #92400E;
+  border: 1px solid var(--color-warning-border);
+}
+
+.gantt-bar--empty {
+  background: transparent;
+  color: transparent;
+}
+
+/* Legend */
+.gantt-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-gray-50);
+  flex-wrap: wrap;
+}
+
+.gantt-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.gantt-legend__swatch {
+  width: 24px; height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* Tooltip */
+.gantt-tooltip {
+  position: fixed;
+  z-index: var(--z-dropdown);
+  background: var(--color-gray-900);
+  color: white;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  display: none;
+}
+
+/* Month summary row */
+.gantt-summary-row td {
+  background: var(--color-primary-50);
+  padding: var(--space-2) var(--space-2);
+  border-top: 2px solid var(--color-primary-200);
+}
+
+.gantt-summary-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  color: var(--color-primary-700);
+}

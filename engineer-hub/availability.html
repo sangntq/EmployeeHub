@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Availability Timeline · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/availability.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>Lịch trống</span>
+          </div>
+          <h1 class="page-header__title">📅 Availability Timeline</h1>
+          <p class="page-header__subtitle">Xem lịch trống 6 tháng của kỹ sư — lên kế hoạch dự án</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="showToast('Đang xuất...', 'info')">📊 Export Excel</button>
+          <button class="btn btn--primary" onclick="window.location='search.html'">🤖 AI Search</button>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="availability-summary">
+        <div class="avail-summary-card">
+          <div class="avail-summary-card__icon icon-bg--green">🟢</div>
+          <div>
+            <div class="avail-summary-card__value" style="color:var(--color-success)" id="countAvail">—</div>
+            <div class="avail-summary-card__label">Rảnh ngay</div>
+          </div>
+        </div>
+        <div class="avail-summary-card">
+          <div class="avail-summary-card__icon icon-bg--yellow">🟡</div>
+          <div>
+            <div class="avail-summary-card__value" style="color:var(--color-warning)" id="countSoon">—</div>
+            <div class="avail-summary-card__label">Rảnh trong 30 ngày</div>
+          </div>
+        </div>
+        <div class="avail-summary-card">
+          <div class="avail-summary-card__icon icon-bg--blue">📅</div>
+          <div>
+            <div class="avail-summary-card__value" style="color:var(--color-info)" id="countQ2">—</div>
+            <div class="avail-summary-card__label">Rảnh trong 3 tháng</div>
+          </div>
+        </div>
+        <div class="avail-summary-card">
+          <div class="avail-summary-card__icon icon-bg--red">🔴</div>
+          <div>
+            <div class="avail-summary-card__value" style="color:var(--color-danger)" id="countBusy">—</div>
+            <div class="avail-summary-card__label">Đang bận 100%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline Controls -->
+      <div class="timeline-controls">
+        <div class="month-nav">
+          <button class="month-nav__btn" onclick="shiftMonths(-1)">◀</button>
+          <div class="month-nav__label" id="monthRangeLabel">Mar 2026 — Aug 2026</div>
+          <button class="month-nav__btn" onclick="shiftMonths(1)">▶</button>
+        </div>
+        <div class="filter-bar" style="padding:8px 16px;margin:0;flex:1">
+          <div class="filter-bar__search" style="position:relative">
+            <span class="filter-bar__search-icon">🔍</span>
+            <input type="text" id="searchEng" class="form-control filter-bar__search-input"
+              placeholder="Tìm tên kỹ sư..." oninput="filterEngineers()" style="padding-left:36px">
+          </div>
+          <div class="filter-bar__divider"></div>
+          <select class="form-control form-select" style="width:auto;padding:6px 32px 6px 12px;font-size:13px" onchange="filterByLoc(this.value)">
+            <option value="all">🌏 Tất cả</option>
+            <option value="jp">🇯🇵 Nhật Bản</option>
+            <option value="vn">🇻🇳 Việt Nam</option>
+          </select>
+          <select class="form-control form-select" style="width:auto;padding:6px 32px 6px 12px;font-size:13px" onchange="filterBySkill(this.value)">
+            <option value="">Tất cả skill</option>
+            <option value="Java">Java</option>
+            <option value="React">React</option>
+            <option value="AWS">AWS</option>
+            <option value=".NET">.NET</option>
+            <option value="Python">Python</option>
+          </select>
+          <select class="form-control form-select" style="width:auto;padding:6px 32px 6px 12px;font-size:13px" onchange="filterByStatus(this.value)">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="available">🟢 Đang rảnh</option>
+            <option value="partial">🟡 Một phần rảnh</option>
+            <option value="busy">🔴 Đang bận</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Gantt Chart -->
+      <div class="gantt-wrap">
+        <div class="gantt-filter">
+          <span style="font-size:13px;color:var(--color-text-muted)">Hiển thị <strong id="showCount">0</strong> / <strong id="totalEngCount">0</strong> kỹ sư</span>
+          <div style="flex:1"></div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="showMobilizeOnly" onchange="filterEngineers()" style="accent-color:var(--color-primary-600);width:16px;height:16px">
+            ✈️ Chỉ hiển thị Mobilizable
+          </label>
+        </div>
+
+        <div class="gantt-table-wrap">
+          <table class="gantt-table">
+            <thead>
+              <tr id="ganttHeader">
+                <th style="width:240px;border-right:2px solid var(--color-border)">Kỹ sư / Skill</th>
+              </tr>
+            </thead>
+            <tbody id="ganttBody"></tbody>
+            <tfoot id="ganttFooter"></tfoot>
+          </table>
+        </div>
+
+        <div class="gantt-legend">
+          <span style="font-size:12px;font-weight:600;color:var(--color-text-muted)">Chú thích:</span>
+          <div class="gantt-legend__item">
+            <div class="gantt-legend__swatch" style="background:var(--color-success-bg);border:1px solid var(--color-success-border)"></div>
+            Rảnh hoàn toàn
+          </div>
+          <div class="gantt-legend__item">
+            <div class="gantt-legend__swatch" style="background:var(--color-warning-bg);border:1px solid var(--color-warning-border)"></div>
+            50% rảnh
+          </div>
+          <div class="gantt-legend__item">
+            <div class="gantt-legend__swatch" style="background:var(--color-danger-bg);border:1px solid var(--color-danger-border)"></div>
+            Bận 100%
+          </div>
+        </div>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="gantt-tooltip" id="ganttTooltip"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+  document.body.dataset.role = 'sales';
+  renderSidebar('sales');
+  attachLangSelector();
+  function onLangChange() { renderGantt(); }
+
+  // Month management
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let startMonthOffset = 0; // 0 = Mar 2026
+  const BASE_YEAR = 2026;
+  const BASE_MONTH = 2; // March (0-indexed)
+
+  function getMonths() {
+    const result = [];
+    for (let i = 0; i < 6; i++) {
+      let m = (BASE_MONTH + startMonthOffset + i) % 12;
+      let y = BASE_YEAR + Math.floor((BASE_MONTH + startMonthOffset + i) / 12);
+      result.push({ month: m, year: y, label: MONTHS[m] + ' ' + y });
+    }
+    return result;
+  }
+
+  function shiftMonths(delta) {
+    startMonthOffset += delta;
+    renderGantt();
+  }
+
+  // Extended engineer data with month-by-month availability
+  // For each month: 0=available, 50=partial, 100=busy
+  const GANTT_DATA = [
+    { eng: ENGINEERS[0], months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[1], months: [50,0,0,0,0,0],   project: 'Dự án Alpha (Toshiba)' },
+    { eng: ENGINEERS[2], months: [100,100,100,0,0,0], project: 'Dự án Beta (Sony)' },
+    { eng: ENGINEERS[3], months: [100,100,0,0,0,0], project: 'Dự án Gamma (NTT)' },
+    { eng: ENGINEERS[4], months: [50,50,0,0,0,0],  project: 'Tư vấn nội bộ' },
+    { eng: ENGINEERS[5], months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[6], months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[7], months: [50,0,0,0,0,0],   project: 'Offshore Project X' },
+    { eng: ENGINEERS[8], months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[9], months: [100,100,0,0,0,0], project: 'AI Project Alpha' },
+    { eng: ENGINEERS[10],months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[11],months: [0,0,0,0,0,0],    project: null },
+    { eng: ENGINEERS[12],months: [100,100,100,100,0,0], project: 'Offshore Project Z' },
+  ];
+
+  let filteredData = [...GANTT_DATA];
+  let filterLoc = 'all', filterSkill = '', filterStatus = 'all';
+
+  function filterByLoc(val) { filterLoc = val; filterEngineers(); }
+  function filterBySkill(val) { filterSkill = val; filterEngineers(); }
+  function filterByStatus(val) { filterStatus = val; filterEngineers(); }
+
+  function filterEngineers() {
+    const search = document.getElementById('searchEng').value.toLowerCase();
+    const mobileOnly = document.getElementById('showMobilizeOnly').checked;
+
+    filteredData = GANTT_DATA.filter(d => {
+      const e = d.eng;
+      if (search && !e.name.toLowerCase().includes(search)) return false;
+      if (filterLoc !== 'all' && e.location !== filterLoc) return false;
+      if (filterSkill && !e.skills.some(s => s.name === filterSkill)) return false;
+      if (mobileOnly && !e.mobilizable) return false;
+      if (filterStatus !== 'all') {
+        if (filterStatus === 'available' && e.status !== 'available') return false;
+        if (filterStatus === 'partial'   && e.status !== 'partial') return false;
+        if (filterStatus === 'busy'      && e.status !== 'busy') return false;
+      }
+      return true;
+    });
+
+    renderGantt();
+  }
+
+  function renderGantt() {
+    const months = getMonths();
+    document.getElementById('monthRangeLabel').textContent =
+      months[0].label.split(' ')[0] + ' ' + months[0].year + ' — ' +
+      months[5].label.split(' ')[0] + ' ' + months[5].year;
+
+    // Header
+    const header = document.getElementById('ganttHeader');
+    header.innerHTML = `<th style="width:240px;border-right:2px solid var(--color-border)">Kỹ sư / Skill</th>` +
+      months.map((m, i) => `<th class="month-header ${i===0?'month-header--current':''}">${m.label}</th>`).join('');
+
+    // Body
+    const body = document.getElementById('ganttBody');
+    body.innerHTML = filteredData.map(d => {
+      const e = d.eng;
+      const topSkills = e.skills.slice(0,3).map(s=>s.name).join(' · ');
+      const barsHtml = months.map((m, i) => {
+        const monthIdx = (BASE_MONTH + startMonthOffset + i) - BASE_MONTH;
+        const raw = d.months[Math.max(0, Math.min(5, monthIdx))] ?? 0;
+        let barClass, barText;
+        if (raw === 0) { barClass = 'gantt-bar--available'; barText = '🟢 Rảnh'; }
+        else if (raw === 50) { barClass = 'gantt-bar--busy-50'; barText = '🟡 50%'; }
+        else { barClass = 'gantt-bar--busy-100'; barText = d.project ? `🔴 ${d.project.split('(')[0].trim()}` : '🔴 Bận'; }
+
+        return `<td class="gantt-month-cell" ${i===0?'style="border-left:2px solid var(--color-primary-200)"':''}>
+          <div class="gantt-bar ${barClass}"
+            onmouseenter="showTip(event,'${e.name} · ${m.label}: ${barText}')"
+            onmouseleave="hideTip()">
+            ${barText}
+          </div>
+        </td>`;
+      }).join('');
+
+      return `
+        <tr>
+          <td class="gantt-engineer-cell" style="border-right:2px solid var(--color-border)">
+            <div class="gantt-engineer-info">
+              <div class="gantt-avatar" style="background:${e.color}">${e.initials}</div>
+              <div>
+                <div class="gantt-name">${e.name} ${e.mobilizable ? '✈️' : ''}</div>
+                <div class="gantt-skills">${e.level} · ${topSkills}</div>
+                <div style="display:flex;gap:4px;margin-top:3px">
+                  ${locationBadge(e)}
+                  <span class="text-xs text-muted">🇯🇵 ${e.japanese}</span>
+                </div>
+              </div>
+            </div>
+          </td>
+          ${barsHtml}
+        </tr>`;
+    }).join('');
+
+    // Footer: count available per month
+    const footer = document.getElementById('ganttFooter');
+    const countCells = months.map((m, i) => {
+      const monthIdx = (BASE_MONTH + startMonthOffset + i) - BASE_MONTH;
+      const avail = filteredData.filter(d => {
+        const raw = d.months[Math.max(0, Math.min(5, monthIdx))] ?? 0;
+        return raw < 100;
+      }).length;
+      return `<td class="gantt-month-cell">
+        <div class="gantt-summary-count">🟢 ${avail} rảnh</div>
+      </td>`;
+    }).join('');
+
+    footer.innerHTML = `
+      <tr class="gantt-summary-row">
+        <td class="gantt-engineer-cell" style="border-right:2px solid var(--color-border)">
+          <span style="font-size:12px;font-weight:700;color:var(--color-primary-700)">📊 Tổng KS rảnh / tháng</span>
+        </td>
+        ${countCells}
+      </tr>`;
+
+    // Update counts
+    document.getElementById('showCount').textContent = filteredData.length;
+    document.getElementById('totalEngCount').textContent = GANTT_DATA.length;
+
+    // Summary cards
+    const avail = GANTT_DATA.filter(d => d.eng.status === 'available').length;
+    const partial = GANTT_DATA.filter(d => d.eng.status === 'partial').length;
+    const busy = GANTT_DATA.filter(d => d.eng.status === 'busy').length;
+    document.getElementById('countAvail').textContent = avail;
+    document.getElementById('countSoon').textContent = partial;
+    document.getElementById('countQ2').textContent = avail + partial;
+    document.getElementById('countBusy').textContent = busy;
+  }
+
+  // Tooltip
+  function showTip(e, text) {
+    const tip = document.getElementById('ganttTooltip');
+    tip.textContent = text;
+    tip.style.display = 'block';
+    tip.style.left = (e.clientX + 12) + 'px';
+    tip.style.top = (e.clientY - 32) + 'px';
+  }
+
+  function hideTip() {
+    document.getElementById('ganttTooltip').style.display = 'none';
+  }
+
+  document.addEventListener('mousemove', e => {
+    const tip = document.getElementById('ganttTooltip');
+    if (tip.style.display !== 'none') {
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top = (e.clientY - 32) + 'px';
+    }
+  });
+
+  // Init
+  renderGantt();
+</script>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chứng chỉ · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/certs.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>Chứng chỉ</span>
+          </div>
+          <h1 class="page-header__title">🏅 Quản lý Chứng chỉ</h1>
+          <p class="page-header__subtitle">Tổng hợp chứng chỉ toàn công ty · theo dõi hết hạn · đề xuất thi mới</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="showToast('Đang xuất báo cáo...','info')">📊 Export</button>
+          <button class="btn btn--primary" onclick="showAddCertModal()">＋ Thêm chứng chỉ</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="certs-stats" id="certsStats"></div>
+
+      <!-- Expiry Warning -->
+      <div class="expiry-warning" id="expiryWarning" style="display:none">
+        <div class="expiry-warning__icon">⚠️</div>
+        <div>
+          <div class="expiry-warning__title">Chứng chỉ sắp hết hạn trong 60 ngày</div>
+          <div class="expiry-warning__list" id="expiryList"></div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="certs-filter">
+        <div class="certs-filter__search">
+          <span class="certs-filter__search-icon">🔍</span>
+          <input type="text" class="form-control" placeholder="Tìm chứng chỉ hoặc kỹ sư..." id="certSearch" oninput="applyFilter()">
+        </div>
+        <select class="form-control form-select" id="filterCategory" onchange="applyFilter()">
+          <option value="">Tất cả danh mục</option>
+          <option value="Cloud">☁️ Cloud</option>
+          <option value="Java">☕ Java</option>
+          <option value="DevOps">⚙️ DevOps</option>
+          <option value="AI/ML">🤖 AI / ML</option>
+          <option value="Language">🗣️ Ngôn ngữ</option>
+          <option value="Other">📋 Khác</option>
+        </select>
+        <select class="form-control form-select" id="filterLocation" onchange="applyFilter()">
+          <option value="">Tất cả địa điểm</option>
+          <option value="jp">🇯🇵 Nhật Bản</option>
+          <option value="vn">🇻🇳 Việt Nam</option>
+        </select>
+        <select class="form-control form-select" id="filterExpiry" onchange="applyFilter()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="soon">⚠️ Sắp hết hạn</option>
+          <option value="valid">✅ Còn hiệu lực</option>
+          <option value="noexpiry">♾️ Không hết hạn</option>
+        </select>
+        <div class="certs-filter__result" id="filterResult"></div>
+      </div>
+
+      <!-- Cert Categories -->
+      <div id="certContent"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+document.body.dataset.role = 'sales';
+renderSidebar('sales');
+attachLangSelector();
+function onLangChange() { renderCerts(); }
+
+/* ─── Cert definitions ──────────────────────────────────────── */
+const CERT_CATALOG = [
+  // Cloud
+  { id: 'aws-saa',  name: 'AWS Solutions Architect Associate', vendor: 'Amazon Web Services', cat: 'Cloud', icon: '☁️', color: '#FF9900', bgColor: '#FFF7ED', expiryYears: 3 },
+  { id: 'aws-sap',  name: 'AWS Solutions Architect Professional', vendor: 'Amazon Web Services', cat: 'Cloud', icon: '☁️', color: '#FF9900', bgColor: '#FFF7ED', expiryYears: 3 },
+  { id: 'aws-ml',   name: 'AWS ML Specialty', vendor: 'Amazon Web Services', cat: 'AI/ML', icon: '🤖', color: '#FF9900', bgColor: '#FFF7ED', expiryYears: 3 },
+  { id: 'gcp-arch', name: 'Google Cloud Architect', vendor: 'Google Cloud', cat: 'Cloud', icon: '☁️', color: '#4285F4', bgColor: '#EFF6FF', expiryYears: 2 },
+  { id: 'gcp-ml',   name: 'Google ML Engineer', vendor: 'Google Cloud', cat: 'AI/ML', icon: '🤖', color: '#4285F4', bgColor: '#EFF6FF', expiryYears: 2 },
+  { id: 'azure-dev',name: 'Azure Developer Associate', vendor: 'Microsoft Azure', cat: 'Cloud', icon: '☁️', color: '#0078D4', bgColor: '#EFF6FF', expiryYears: 2 },
+  { id: 'azure-adm',name: 'Azure Administrator', vendor: 'Microsoft Azure', cat: 'Cloud', icon: '☁️', color: '#0078D4', bgColor: '#EFF6FF', expiryYears: 2 },
+  // Java
+  { id: 'java-ocp', name: 'Oracle Java OCP', vendor: 'Oracle', cat: 'Java', icon: '☕', color: '#F80000', bgColor: '#FFF1F2', expiryYears: null },
+  { id: 'java-se',  name: 'Oracle Java SE', vendor: 'Oracle', cat: 'Java', icon: '☕', color: '#F80000', bgColor: '#FFF1F2', expiryYears: null },
+  // DevOps
+  { id: 'cka',      name: 'CKA (Kubernetes)', vendor: 'CNCF', cat: 'DevOps', icon: '⚙️', color: '#326CE5', bgColor: '#EFF6FF', expiryYears: 2 },
+  { id: 'terraform',name: 'HashiCorp Terraform', vendor: 'HashiCorp', cat: 'DevOps', icon: '⚙️', color: '#7B42BC', bgColor: '#F5F3FF', expiryYears: 2 },
+  { id: 'togaf',    name: 'TOGAF', vendor: 'The Open Group', cat: 'Other', icon: '📋', color: '#059669', bgColor: '#ECFDF5', expiryYears: null },
+  // Frontend
+  { id: 'meta-react',name: 'Meta React Developer', vendor: 'Meta', cat: 'Other', icon: '⚛️', color: '#0668E1', bgColor: '#EFF6FF', expiryYears: null },
+];
+
+// Map cert name → catalog id
+function findCertCatalog(certName) {
+  const lc = certName.toLowerCase();
+  if (lc.includes('aws sap') || lc.includes('aws solutions architect professional')) return CERT_CATALOG.find(c => c.id === 'aws-sap');
+  if (lc.includes('aws saa') || lc.includes('aws solutions architect associate')) return CERT_CATALOG.find(c => c.id === 'aws-saa');
+  if (lc.includes('aws ml')) return CERT_CATALOG.find(c => c.id === 'aws-ml');
+  if (lc.includes('google cloud architect')) return CERT_CATALOG.find(c => c.id === 'gcp-arch');
+  if (lc.includes('google ml')) return CERT_CATALOG.find(c => c.id === 'gcp-ml');
+  if (lc.includes('azure administrator')) return CERT_CATALOG.find(c => c.id === 'azure-adm');
+  if (lc.includes('azure developer')) return CERT_CATALOG.find(c => c.id === 'azure-dev');
+  if (lc.includes('oracle java ocp')) return CERT_CATALOG.find(c => c.id === 'java-ocp');
+  if (lc.includes('oracle java se')) return CERT_CATALOG.find(c => c.id === 'java-se');
+  if (lc.includes('cka') || lc.includes('kubernetes')) return CERT_CATALOG.find(c => c.id === 'cka');
+  if (lc.includes('terraform')) return CERT_CATALOG.find(c => c.id === 'terraform');
+  if (lc.includes('togaf')) return CERT_CATALOG.find(c => c.id === 'togaf');
+  if (lc.includes('meta react')) return CERT_CATALOG.find(c => c.id === 'meta-react');
+  return null;
+}
+
+// Build aggregated cert data from ENGINEERS
+function buildCertData() {
+  const certMap = {}; // certName → { catalog, holders: [{eng, earnedDate, expiryDate}] }
+
+  ENGINEERS.forEach(eng => {
+    (eng.certs || []).forEach(certName => {
+      if (!certMap[certName]) {
+        certMap[certName] = {
+          name: certName,
+          catalog: findCertCatalog(certName),
+          holders: [],
+        };
+      }
+      // Simulate earned/expiry dates
+      const earned = simulateDate(eng.id + certName, -36, -6);  // 6–36 months ago
+      const catalog = certMap[certName].catalog;
+      const expiry = catalog && catalog.expiryYears
+        ? addMonths(earned, catalog.expiryYears * 12)
+        : null;
+      certMap[certName].holders.push({ eng, earned, expiry });
+    });
+  });
+
+  return Object.values(certMap);
+}
+
+function simulateDate(seed, minMonths, maxMonths) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) & 0xffffffff;
+  const range = maxMonths - minMonths;
+  const offset = minMonths + Math.abs(hash % range);
+  return addMonths(new Date(), offset);
+}
+
+function addMonths(date, months) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+function expiryStatus(expiryDate) {
+  if (!expiryDate) return 'na';
+  const now = new Date();
+  const diff = (expiryDate - now) / (1000 * 60 * 60 * 24);
+  if (diff < 0)   return 'expired';
+  if (diff < 60)  return 'soon';
+  return 'valid';
+}
+
+function expiryBadgeHtml(expiryDate) {
+  const status = expiryStatus(expiryDate);
+  if (status === 'na') return '<span class="expiry-badge expiry-badge--na">♾️ Không hết hạn</span>';
+  if (status === 'expired') return `<span class="expiry-badge expiry-badge--expired">❌ Hết hạn ${fmtDate(expiryDate)}</span>`;
+  if (status === 'soon') return `<span class="expiry-badge expiry-badge--soon">⚠️ Hết hạn ${fmtDate(expiryDate)}</span>`;
+  return `<span class="expiry-badge expiry-badge--valid">✅ HH đến ${fmtDate(expiryDate)}</span>`;
+}
+
+function fmtDate(d) {
+  return d ? d.toLocaleDateString('vi-VN', {month:'2-digit',year:'numeric'}) : '—';
+}
+
+/* ─── Render ─────────────────────────────────────────────────── */
+let ALL_CERTS = [];
+
+function renderStats(certs) {
+  const total    = certs.reduce((s,c) => s + c.holders.length, 0);
+  const uniqueCerts = certs.length;
+  const soonExpiry  = certs.reduce((s,c) => s + c.holders.filter(h => expiryStatus(h.expiry) === 'soon').length, 0);
+  const topCert     = certs.sort((a,b) => b.holders.length - a.holders.length)[0];
+
+  document.getElementById('certsStats').innerHTML = `
+    <div class="cert-stat-card">
+      <div class="cert-stat-card__icon" style="background:#EEF2FF">🏅</div>
+      <div>
+        <div class="cert-stat-card__value">${total}</div>
+        <div class="cert-stat-card__label">Tổng chứng chỉ</div>
+      </div>
+    </div>
+    <div class="cert-stat-card">
+      <div class="cert-stat-card__icon" style="background:#ECFDF5">📋</div>
+      <div>
+        <div class="cert-stat-card__value">${uniqueCerts}</div>
+        <div class="cert-stat-card__label">Loại chứng chỉ</div>
+      </div>
+    </div>
+    <div class="cert-stat-card">
+      <div class="cert-stat-card__icon" style="background:#FEF3C7">⚠️</div>
+      <div>
+        <div class="cert-stat-card__value">${soonExpiry}</div>
+        <div class="cert-stat-card__label">Sắp hết hạn (60 ngày)</div>
+      </div>
+    </div>
+    <div class="cert-stat-card">
+      <div class="cert-stat-card__icon" style="background:#FFF7ED">🏆</div>
+      <div>
+        <div class="cert-stat-card__value">${topCert ? topCert.holders.length : 0}</div>
+        <div class="cert-stat-card__label">${topCert ? topCert.name.split(' ').slice(0,2).join(' ') : '—'} (phổ biến nhất)</div>
+      </div>
+    </div>`;
+}
+
+function renderExpiryWarning(certs) {
+  const soonItems = [];
+  certs.forEach(c => {
+    c.holders.forEach(h => {
+      if (expiryStatus(h.expiry) === 'soon') {
+        soonItems.push({ cert: c.name, eng: h.eng, expiry: h.expiry });
+      }
+    });
+  });
+
+  const warn = document.getElementById('expiryWarning');
+  if (soonItems.length === 0) { warn.style.display = 'none'; return; }
+  warn.style.display = 'flex';
+  document.getElementById('expiryList').innerHTML = soonItems.map(item => `
+    <div class="expiry-item">
+      <div style="width:18px;height:18px;border-radius:50%;background:${item.eng.color};display:flex;align-items:center;justify-content:center;color:white;font-size:8px;font-weight:700;flex-shrink:0">${item.eng.initials}</div>
+      <span>${item.eng.name} — ${item.cert}</span>
+      <span style="opacity:0.7">(${fmtDate(item.expiry)})</span>
+    </div>`).join('');
+}
+
+function renderCerts() {
+  const searchVal   = (document.getElementById('certSearch')?.value || '').toLowerCase();
+  const filterCat   = document.getElementById('filterCategory')?.value || '';
+  const filterLoc   = document.getElementById('filterLocation')?.value || '';
+  const filterExpiry= document.getElementById('filterExpiry')?.value || '';
+
+  let filtered = ALL_CERTS.filter(cert => {
+    // Search
+    if (searchVal) {
+      const matchName = cert.name.toLowerCase().includes(searchVal);
+      const matchHolder = cert.holders.some(h => h.eng.name.toLowerCase().includes(searchVal));
+      if (!matchName && !matchHolder) return false;
+    }
+    // Category
+    if (filterCat && cert.catalog?.cat !== filterCat) return false;
+    // Location
+    if (filterLoc) {
+      const hasLoc = cert.holders.some(h => h.eng.location === filterLoc);
+      if (!hasLoc) return false;
+    }
+    // Expiry
+    if (filterExpiry) {
+      const hasMatch = cert.holders.some(h => {
+        if (filterExpiry === 'soon')     return expiryStatus(h.expiry) === 'soon';
+        if (filterExpiry === 'valid')    return expiryStatus(h.expiry) === 'valid';
+        if (filterExpiry === 'noexpiry') return expiryStatus(h.expiry) === 'na';
+        return true;
+      });
+      if (!hasMatch) return false;
+    }
+    return true;
+  });
+
+  // Filter holders by location if set
+  if (filterLoc) {
+    filtered = filtered.map(c => ({
+      ...c,
+      holders: c.holders.filter(h => h.eng.location === filterLoc),
+    }));
+  }
+
+  document.getElementById('filterResult').textContent = `${filtered.length} chứng chỉ`;
+
+  // Group by category
+  const CAT_ORDER = ['Cloud', 'Java', 'DevOps', 'AI/ML', 'Language', 'Other'];
+  const CAT_META = {
+    'Cloud':    { icon: '☁️', bg: '#EFF6FF', label: 'Cloud / Infrastructure' },
+    'Java':     { icon: '☕', bg: '#FFF1F2', label: 'Java / Backend' },
+    'DevOps':   { icon: '⚙️', bg: '#F5F3FF', label: 'DevOps / K8s / IaC' },
+    'AI/ML':    { icon: '🤖', bg: '#ECFDF5', label: 'AI / Machine Learning' },
+    'Language': { icon: '🗣️', bg: '#FFF7ED', label: 'Ngôn ngữ' },
+    'Other':    { icon: '📋', bg: '#F9FAFB', label: 'Khác / Architecture' },
+  };
+
+  const groups = {};
+  filtered.forEach(cert => {
+    const cat = cert.catalog?.cat || 'Other';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(cert);
+  });
+
+  let html = '';
+  if (filtered.length === 0) {
+    html = `<div class="certs-empty"><div class="certs-empty__icon">🔍</div><div class="certs-empty__text">Không tìm thấy chứng chỉ phù hợp.</div></div>`;
+  } else {
+    CAT_ORDER.forEach(cat => {
+      if (!groups[cat] || groups[cat].length === 0) return;
+      const meta = CAT_META[cat] || CAT_META['Other'];
+      html += `
+        <div class="cert-category">
+          <div class="cert-category__header">
+            <div class="cert-category__icon" style="background:${meta.bg}">${meta.icon}</div>
+            <div class="cert-category__title">${meta.label}</div>
+            <div class="cert-category__count">${groups[cat].length} loại · ${groups[cat].reduce((s,c)=>s+c.holders.length,0)} kỹ sư</div>
+          </div>
+          <div class="cert-grid">
+            ${groups[cat].map(cert => renderCertCard(cert)).join('')}
+          </div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('certContent').innerHTML = html;
+}
+
+function renderCertCard(cert) {
+  const cat = cert.catalog;
+  const iconBg = cat?.bgColor || '#F9FAFB';
+  const icon   = cat?.icon   || '🏅';
+  const vendor = cat?.vendor || cert.name;
+
+  // Show all expiry statuses for this cert's holders
+  const expirySet = new Set(cert.holders.map(h => expiryStatus(h.expiry)));
+  let expiryHtml = '';
+  if (expirySet.has('soon'))    expiryHtml += '<span class="expiry-badge expiry-badge--soon">⚠️ Có người sắp hết hạn</span>';
+  else if (expirySet.has('valid')) expiryHtml += '<span class="expiry-badge expiry-badge--valid">✅ Còn hiệu lực</span>';
+  else if (expirySet.has('na'))    expiryHtml += '<span class="expiry-badge expiry-badge--na">♾️ Không hết hạn</span>';
+
+  const holdersHtml = cert.holders.slice(0, 8).map(h => `
+    <div class="cert-holder" title="${h.eng.name} — Đạt: ${fmtDate(h.earned)}${h.expiry ? ' · HH: '+fmtDate(h.expiry) : ''}">
+      <div class="cert-holder__avatar" style="background:${h.eng.color}">${h.eng.initials}</div>
+      <span class="cert-holder__name">${h.eng.name.split(' ').slice(-1)[0]}</span>
+      <span class="cert-holder__loc">${h.eng.location === 'jp' ? '🇯🇵' : '🇻🇳'}</span>
+    </div>`).join('');
+
+  const moreCount = cert.holders.length > 8 ? cert.holders.length - 8 : 0;
+
+  return `
+    <div class="cert-card">
+      <div class="cert-card__header">
+        <div class="cert-card__badge-icon" style="background:${iconBg}">${icon}</div>
+        <div class="cert-card__info">
+          <div class="cert-card__name">${cert.name}</div>
+          <div class="cert-card__vendor">${vendor}</div>
+          <div class="cert-card__meta">
+            ${expiryHtml}
+            <span class="badge badge--primary">${cert.holders.length} người</span>
+          </div>
+        </div>
+      </div>
+      <div class="cert-card__body">
+        <div class="cert-card__body-label">Kỹ sư có chứng chỉ này</div>
+        <div class="cert-holders">
+          ${holdersHtml}
+          ${moreCount > 0 ? `<div class="cert-holder" style="background:var(--color-gray-100);border-style:dashed">+${moreCount}</div>` : ''}
+        </div>
+      </div>
+      <div class="cert-card__footer">
+        <span>🇯🇵 ${cert.holders.filter(h=>h.eng.location==='jp').length} JP · 🇻🇳 ${cert.holders.filter(h=>h.eng.location==='vn').length} VN</span>
+        <span class="cert-card__footer-count">Tổng: ${cert.holders.length} người</span>
+      </div>
+    </div>`;
+}
+
+function applyFilter() { renderCerts(); }
+
+function showAddCertModal() {
+  showToast('Tính năng thêm chứng chỉ mới đang phát triển', 'info');
+}
+
+/* ─── Init ─────────────────────────────────────────────────── */
+ALL_CERTS = buildCertData();
+renderStats([...ALL_CERTS]);
+renderExpiryWarning(ALL_CERTS);
+renderCerts();
+</script>
+</body>
+</html>

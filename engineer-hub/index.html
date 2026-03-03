@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>Dashboard</span>
+          </div>
+          <h1 class="page-header__title">Dashboard Tổng quan</h1>
+          <p class="page-header__subtitle">Chào buổi sáng, Tanaka-san! Hôm nay: 28/02/2026</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="window.location='search.html'">🤖 AI Search</button>
+          <button class="btn btn--primary" onclick="showToast('Đang xuất báo cáo...', 'info')">📊 Export báo cáo</button>
+        </div>
+      </div>
+
+      <!-- Location Filter Tabs -->
+      <div class="location-tabs">
+        <button class="location-tab location-tab--active" onclick="filterLocation('all', this)">
+          🌏 Tất cả <span class="location-tab__count">1,120</span>
+        </button>
+        <button class="location-tab" onclick="filterLocation('jp', this)">
+          🇯🇵 Nhật Bản <span class="location-tab__count">120</span>
+        </button>
+        <button class="location-tab" onclick="filterLocation('vn', this)">
+          🇻🇳 Việt Nam <span class="location-tab__count">1,000</span>
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Main Content -->
+      <div class="dashboard-grid">
+        <!-- Left: Available Engineers -->
+        <div>
+          <!-- Alerts -->
+          <div class="card mb-6">
+            <div class="card__header">
+              <span class="card__title">⚠️ Cần chú ý</span>
+              <button class="btn btn--sm btn--ghost">Xem tất cả →</button>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+          </div>
+
+          <!-- Available Engineers -->
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">🟢 Kỹ sư đang rảnh / sắp rảnh</span>
+              <div class="flex gap-2">
+                <select class="form-control form-select" style="width:auto;padding:6px 32px 6px 12px;font-size:13px" onchange="sortEngineers(this.value)">
+                  <option value="status">Sắp xếp: Trạng thái</option>
+                  <option value="level">Theo cấp bậc</option>
+                  <option value="available">Rảnh sớm nhất</option>
+                </select>
+                <button class="btn btn--sm btn--primary" onclick="window.location='search.html'">🔍 Tìm nâng cao</button>
+              </div>
+            </div>
+            <div class="available-list" id="engineerList"></div>
+          </div>
+        </div>
+
+        <!-- Right: Sidebar widgets -->
+        <div>
+          <!-- Utilization -->
+          <div class="card mb-6">
+            <div class="card__header">
+              <span class="card__title">📈 Tỷ lệ sử dụng</span>
+            </div>
+            <div class="card__body">
+              <div class="util-ring">
+                <div>
+                  <div class="util-circle" id="utilJP">
+                    <svg viewBox="0 0 80 80" width="80" height="80">
+                      <circle class="util-circle__bg" cx="40" cy="40" r="32"/>
+                      <circle class="util-circle__fg util-circle__fg--jp" cx="40" cy="40" r="32"
+                        stroke-dasharray="201" stroke-dashoffset="26" id="jpRing"/>
+                    </svg>
+                    <div class="util-circle__label">87%</div>
+                  </div>
+                  <div style="text-align:center;font-size:12px;color:var(--color-text-muted);margin-top:6px">🇯🇵 Nhật</div>
+                </div>
+                <div>
+                  <div class="util-circle">
+                    <svg viewBox="0 0 80 80" width="80" height="80">
+                      <circle class="util-circle__bg" cx="40" cy="40" r="32"/>
+                      <circle class="util-circle__fg" cx="40" cy="40" r="32"
+                        stroke-dasharray="201" stroke-dashoffset="36"
+                        style="fill:none;stroke:#10B981;stroke-width:8;stroke-linecap:round"/>
+                    </svg>
+                    <div class="util-circle__label">82%</div>
+                  </div>
+                  <div style="text-align:center;font-size:12px;color:var(--color-text-muted);margin-top:6px">🇻🇳 Việt Nam</div>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div style="padding:0 var(--space-2)">
+                <div class="skill-bar-item">
+                  <div class="skill-bar-item__name" style="color:var(--color-success);font-size:12px">Đang làm việc</div>
+                  <div class="skill-bar-item__bar-wrap">
+                    <div class="skill-bar-item__bar" style="background:var(--color-success);width:84%"></div>
+                  </div>
+                  <div class="skill-bar-item__count">940</div>
+                </div>
+                <div class="skill-bar-item">
+                  <div class="skill-bar-item__name" style="color:var(--color-warning);font-size:12px">Một phần rảnh</div>
+                  <div class="skill-bar-item__bar-wrap">
+                    <div class="skill-bar-item__bar" style="background:var(--color-warning);width:10%"></div>
+                  </div>
+                  <div class="skill-bar-item__count">112</div>
+                </div>
+                <div class="skill-bar-item">
+                  <div class="skill-bar-item__name" style="color:var(--color-danger);font-size:12px">Rảnh hoàn toàn</div>
+                  <div class="skill-bar-item__bar-wrap">
+                    <div class="skill-bar-item__bar" style="background:var(--color-danger);width:6%"></div>
+                  </div>
+                  <div class="skill-bar-item__count">68</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobilizable -->
+          <div class="card mb-6">
+            <div class="card__header">
+              <span class="card__title">✈️ Mobilizable</span>
+              <button class="btn btn--sm btn--secondary">Xem danh sách</button>
+            </div>
+            <div class="card__body">
+              <div class="mobilize-card">
+                <div class="mobilize-card__header">
+                  <span>🇻🇳→🇯🇵</span>
+                  <span class="mobilize-card__title">KS VN sẵn sàng onsite Nhật</span>
+                </div>
+                <div class="mobilize-card__count">43 KS</div>
+                <div class="mobilize-card__desc">Có JLPT N2+, đã/đủ điều kiện visa</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-4)">
+                <div class="flex items-center gap-2" style="font-size:13px">
+                  <span style="width:10px;height:10px;background:var(--color-success);border-radius:50%;flex-shrink:0"></span>
+                  <span style="flex:1;color:var(--color-text-secondary)">Visa còn hạn</span>
+                  <span style="font-weight:600">28 KS</span>
+                </div>
+                <div class="flex items-center gap-2" style="font-size:13px">
+                  <span style="width:10px;height:10px;background:var(--color-warning);border-radius:50%;flex-shrink:0"></span>
+                  <span style="flex:1;color:var(--color-text-secondary)">Cần xin visa mới</span>
+                  <span style="font-weight:600">15 KS</span>
+                </div>
+                <div class="flex items-center gap-2" style="font-size:13px">
+                  <span style="width:10px;height:10px;background:var(--color-info);border-radius:50%;flex-shrink:0"></span>
+                  <span style="flex:1;color:var(--color-text-secondary)">Đang học N2 (tiềm năng)</span>
+                  <span style="font-weight:600">156 KS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Skills -->
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">🔥 Top Skills</span>
+            </div>
+            <div class="card__body">
+              <div id="skillBars"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+  // Init
+  document.body.dataset.role = 'sales';
+  renderSidebar('sales');
+  attachLangSelector();
+
+  // Re-render page content on lang change
+  function onLangChange() { renderStats(currentLoc); renderAvailableList(); renderAlerts(); renderTopSkills(); }
+
+  // Current location filter
+  let currentLoc = 'all';
+
+  // Render Stats
+  function renderStats(loc) {
+    const jp = STATS.total.jp, vn = STATS.total.vn;
+    const avJP = STATS.available.jp, avVN = STATS.available.vn;
+    const soJP = STATS.soonAvailable.jp, soVN = STATS.soonAvailable.vn;
+
+    let total, avail, soon;
+    if (loc === 'jp') { total = jp; avail = avJP; soon = soJP; }
+    else if (loc === 'vn') { total = vn; avail = avVN; soon = soVN; }
+    else { total = jp + vn; avail = avJP + avVN; soon = soJP + soVN; }
+
+    const cards = [
+      {
+        label: 'Tổng kỹ sư', value: total.toLocaleString(),
+        icon: '👥', iconBg: 'icon-bg--indigo',
+        sub: loc === 'all' ? [
+          { dot: '#4F46E5', text: `🇯🇵 ${jp} tại Nhật` },
+          { dot: '#10B981', text: `🇻🇳 ${vn} tại VN` }
+        ] : [],
+        trend: '+12% QoQ', trendUp: true,
+      },
+      {
+        label: 'Đang rảnh', value: avail.toLocaleString(),
+        icon: '🟢', iconBg: 'icon-bg--green',
+        sub: loc === 'all' ? [
+          { dot: '#4F46E5', text: `JP: ${avJP}` },
+          { dot: '#10B981', text: `VN: ${avVN}` }
+        ] : [],
+        trend: 'Có thể assign ngay', trendUp: true,
+      },
+      {
+        label: 'Sắp rảnh (30 ngày)', value: soon.toLocaleString(),
+        icon: '🟡', iconBg: 'icon-bg--yellow',
+        sub: [],
+        trend: 'Lên kế hoạch trước', trendUp: null,
+      },
+      {
+        label: 'Utilization', value: loc === 'jp' ? '87%' : loc === 'vn' ? '82%' : '84%',
+        icon: '📈', iconBg: 'icon-bg--blue',
+        sub: [],
+        trend: '+3% so với tháng trước', trendUp: true,
+      },
+      {
+        label: '✈️ Mobilizable', value: STATS.mobilizable,
+        icon: '🇻🇳', iconBg: 'icon-bg--indigo',
+        sub: [{ dot: '#3B82F6', text: 'VN → JP sẵn sàng' }],
+        trend: 'JLPT N2+ & visa OK', trendUp: null,
+      },
+    ];
+
+    document.getElementById('statsGrid').innerHTML = cards.map(c => `
+      <div class="stat-card">
+        <div class="stat-card__header">
+          <span class="stat-card__label">${c.label}</span>
+          <div class="stat-card__icon ${c.iconBg}" style="font-size:20px">${c.icon}</div>
+        </div>
+        <div class="stat-card__value">${c.value}</div>
+        ${c.sub.length ? `<div class="stat-card__sub">${c.sub.map(s =>
+          `<span class="stat-card__sub-item"><span class="stat-card__sub-dot" style="background:${s.dot}"></span>${s.text}</span>`
+        ).join('')}</div>` : ''}
+        ${c.trend ? `<div class="stat-card__trend ${c.trendUp === true ? 'stat-card__trend--up' : c.trendUp === false ? 'stat-card__trend--down' : ''}">${c.trendUp === true ? '↑' : c.trendUp === false ? '↓' : 'ℹ'} ${c.trend}</div>` : ''}
+      </div>`).join('');
+  }
+
+  // Render engineer list
+  function renderEngineers(loc) {
+    let list = [...ENGINEERS];
+    if (loc === 'jp') list = list.filter(e => e.location === 'jp');
+    else if (loc === 'vn') list = list.filter(e => e.location === 'vn');
+
+    // Sort: available first
+    list.sort((a, b) => {
+      const order = { available: 0, partial: 1, busy: 2 };
+      return order[a.status] - order[b.status];
+    });
+
+    const html = list.map(eng => renderEngineerCard(eng)).join('');
+    document.getElementById('engineerList').innerHTML = html || '<div class="empty-state"><div class="empty-state__icon">🔍</div><div class="empty-state__title">Không có kỹ sư</div></div>';
+  }
+
+  // Render alerts
+  function renderAlerts() {
+    document.getElementById('alertList').innerHTML = ALERTS.map(a => `
+      <div class="alert-item alert-item--${a.type}">
+        <span>${a.icon}</span>
+        <span>${a.text}</span>
+        <span style="margin-left:auto;font-size:12px;opacity:0.7">→</span>
+      </div>`).join('');
+  }
+
+  // Render skill bars
+  function renderSkillBars() {
+    document.getElementById('skillBars').innerHTML = TOP_SKILLS.map(s => `
+      <div class="skill-bar-item">
+        <div class="skill-bar-item__name">${s.name}</div>
+        <div class="skill-bar-item__bar-wrap">
+          <div class="skill-bar-item__bar" style="width:${s.pct}%"></div>
+        </div>
+        <div class="skill-bar-item__count">${s.count}</div>
+      </div>`).join('');
+  }
+
+  // Filter by location
+  function filterLocation(loc, btn) {
+    currentLoc = loc;
+    document.querySelectorAll('.location-tab').forEach(b => b.classList.remove('location-tab--active'));
+    btn.classList.add('location-tab--active');
+    renderStats(loc);
+    renderEngineers(loc);
+  }
+
+  // Sort engineers
+  function sortEngineers(by) {
+    const order = { available:0, partial:1, busy:2 };
+    const levelOrder = { Junior:0, Middle:1, Senior:2, Lead:3, Principal:4 };
+    let list = [...ENGINEERS];
+    if (currentLoc !== 'all') list = list.filter(e => e.location === currentLoc);
+
+    if (by === 'status') list.sort((a,b) => order[a.status] - order[b.status]);
+    else if (by === 'level') list.sort((a,b) => levelOrder[b.level] - levelOrder[a.level]);
+    else if (by === 'available') list.sort((a,b) => new Date(a.availableFrom) - new Date(b.availableFrom));
+
+    document.getElementById('engineerList').innerHTML = list.map(e => renderEngineerCard(e)).join('');
+  }
+
+  // Init render
+  renderStats('all');
+  renderEngineers('all');
+  renderAlerts();
+  renderSkillBars();
+</script>
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile của tôi · EngineerHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/profile.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="layout__sidebar" id="sidebar"></aside>
+
+  <main class="layout__main">
+    <div class="layout__content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__breadcrumb">
+            <span>EngineerHub</span>
+            <span class="page-header__breadcrumb-sep">›</span>
+            <span>Profile của tôi</span>
+          </div>
+          <h1 class="page-header__title">✏️ Cập nhật Profile</h1>
+          <p class="page-header__subtitle">Cập nhật skills và chứng chỉ sau mỗi dự án — giúp công ty nắm bắt năng lực của bạn</p>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="saveDraft()">💾 Lưu nháp</button>
+          <button class="btn btn--primary" onclick="submitForReview()">📤 Gửi Bucho duyệt</button>
+        </div>
+      </div>
+
+      <!-- Notification banner -->
+      <div class="alert alert--info mb-6">
+        <span class="alert__icon">💡</span>
+        <div class="alert__content">
+          <div class="alert__title">Dự án Alpha (Toshiba) vừa kết thúc!</div>
+          Hãy cập nhật skills bạn đã dùng trong dự án và thêm chứng chỉ mới nếu có. Bucho sẽ review trong 2 ngày.
+        </div>
+        <button class="btn btn--sm btn--secondary" onclick="this.closest('.alert').remove()">✕</button>
+      </div>
+
+      <div class="profile-layout">
+        <!-- Left: Profile Card -->
+        <div>
+          <div class="profile-card">
+            <div class="profile-card__hero">
+              <div class="profile-card__avatar">NA</div>
+              <div class="profile-card__name">Nguyen Van An</div>
+              <div class="profile-card__title">Senior Software Engineer · ENG-001</div>
+              <div class="profile-card__status-pill">
+                <span style="width:8px;height:8px;background:#6EE7B7;border-radius:50%"></span>
+                🟢 Đang rảnh từ 01/03/2026
+              </div>
+            </div>
+            <div class="profile-card__body">
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">🏢</span>
+                <span class="profile-info-row__label">Team</span>
+                <span class="profile-info-row__value">Backend A · Yamada-san</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">📅</span>
+                <span class="profile-info-row__label">Vào công ty</span>
+                <span class="profile-info-row__value">01/04/2020 (5 năm 10 tháng)</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">🇯🇵</span>
+                <span class="profile-info-row__label">Tiếng Nhật</span>
+                <span class="profile-info-row__value">N2 Business</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">🇬🇧</span>
+                <span class="profile-info-row__label">Tiếng Anh</span>
+                <span class="profile-info-row__value">TOEIC 750</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">📍</span>
+                <span class="profile-info-row__label">Vị trí</span>
+                <span class="profile-info-row__value">🇯🇵 Tokyo, Nhật Bản</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="profile-info-row__icon">⭐</span>
+                <span class="profile-info-row__label">Rating</span>
+                <span class="profile-info-row__value">
+                  <span style="color:#F59E0B">★★★★★</span> 4.8/5.0
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Goals card -->
+          <div class="goal-card mt-6">
+            <div class="goal-card__header">
+              <div class="goal-card__title">🎯 Mục tiêu học tập</div>
+              <button class="btn btn--sm btn--ghost" style="color:#065F46" onclick="addGoal()">+ Thêm</button>
+            </div>
+            <div id="goalList">
+              <div class="goal-item">
+                <div style="font-size:20px">🏅</div>
+                <div style="flex:1">
+                  <div class="goal-item__name">AWS Solutions Architect Pro</div>
+                  <div class="goal-item__deadline">Dự kiến: Q2/2026</div>
+                  <div class="goal-item__progress mt-2">
+                    <div class="progress"><div class="progress__bar progress__bar--success" style="width:65%"></div></div>
+                    <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px">65% hoàn thành</div>
+                  </div>
+                </div>
+              </div>
+              <div class="goal-item">
+                <div style="font-size:20px">🇯🇵</div>
+                <div style="flex:1">
+                  <div class="goal-item__name">JLPT N1</div>
+                  <div class="goal-item__deadline">Dự kiến: Tháng 12/2026</div>
+                  <div class="goal-item__progress mt-2">
+                    <div class="progress"><div class="progress__bar" style="width:30%"></div></div>
+                    <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px">30% hoàn thành</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Main content -->
+        <div class="profile-main">
+
+          <!-- Tabs -->
+          <div class="tabs" id="mainTabs">
+            <button class="tab tab--active" onclick="switchTab('skills', this)">💻 Skills <span class="tab__count">9</span></button>
+            <button class="tab" onclick="switchTab('certs', this)">🏅 Chứng chỉ <span class="tab__count">2</span></button>
+            <button class="tab" onclick="switchTab('projects', this)">📁 Dự án <span class="tab__count">4</span></button>
+            <button class="tab" onclick="switchTab('note', this)">📝 Ghi chú cho Bucho</button>
+          </div>
+
+          <!-- Skills Tab -->
+          <div id="tab-skills">
+            <!-- Category filter -->
+            <div class="skill-tabs">
+              <button class="skill-tab-btn skill-tab-btn--active" onclick="filterSkillCat('all', this)">Tất cả (9)</button>
+              <button class="skill-tab-btn" onclick="filterSkillCat('backend', this)">Backend (5)</button>
+              <button class="skill-tab-btn" onclick="filterSkillCat('devops', this)">DevOps (3)</button>
+              <button class="skill-tab-btn" onclick="filterSkillCat('database', this)">Database (2)</button>
+              <button class="skill-tab-btn" onclick="filterSkillCat('other', this)">Khác (1)</button>
+            </div>
+
+            <!-- Skills list -->
+            <div class="card" id="skillsList">
+              <div class="card__body" style="padding:0">
+                <div id="skillsContainer"></div>
+              </div>
+            </div>
+
+            <!-- Add skill form -->
+            <div class="add-skill-form mt-4">
+              <div class="add-skill-form__title">➕ Thêm skill mới</div>
+              <div class="skill-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Tên skill</label>
+                  <input type="text" id="newSkillName" class="form-control" placeholder="VD: Kubernetes, Kafka, Go...">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Số năm</label>
+                  <select id="newSkillYears" class="form-control form-select">
+                    <option>< 1 năm</option>
+                    <option>1 năm</option>
+                    <option selected>2 năm</option>
+                    <option>3 năm</option>
+                    <option>4 năm</option>
+                    <option>5+ năm</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Level (1-5)</label>
+                  <div class="star-rating-input" id="newSkillStars">
+                    <button class="star-btn" data-val="1" onclick="setStarRating(1)">★</button>
+                    <button class="star-btn" data-val="2" onclick="setStarRating(2)">★</button>
+                    <button class="star-btn active" data-val="3" onclick="setStarRating(3)">★</button>
+                    <button class="star-btn" data-val="4" onclick="setStarRating(4)">★</button>
+                    <button class="star-btn" data-val="5" onclick="setStarRating(5)">★</button>
+                  </div>
+                </div>
+                <div class="form-group" style="justify-content:flex-end">
+                  <button class="btn btn--primary w-full" onclick="addNewSkill()">✅ Thêm vào</button>
+                </div>
+              </div>
+              <div class="form-group mt-4">
+                <label class="form-label form-label--optional">Ghi chú thêm</label>
+                <input type="text" class="form-control" placeholder="VD: Đã deploy production cluster trong dự án Alpha...">
+              </div>
+            </div>
+          </div>
+
+          <!-- Certs Tab (hidden) -->
+          <div id="tab-certs" class="hidden">
+            <div style="display:flex;flex-direction:column;gap:var(--space-4)" id="certsList">
+              <!-- Rendered by JS -->
+            </div>
+
+            <!-- Add cert form -->
+            <div class="add-skill-form mt-4">
+              <div class="add-skill-form__title">➕ Thêm chứng chỉ mới</div>
+              <div class="grid-2" style="gap:var(--space-4)">
+                <div class="form-group">
+                  <label class="form-label">Tên chứng chỉ</label>
+                  <input type="text" class="form-control" placeholder="VD: AWS Solutions Architect Pro">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tổ chức cấp</label>
+                  <input type="text" class="form-control" placeholder="VD: Amazon Web Services">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Ngày đạt được</label>
+                  <input type="date" class="form-control" value="2026-02-15">
+                </div>
+                <div class="form-group">
+                  <label class="form-label form-label--optional">Ngày hết hạn</label>
+                  <input type="date" class="form-control" value="2029-02-15">
+                </div>
+              </div>
+              <div class="form-group mt-4">
+                <label class="form-label form-label--optional">Upload file chứng chỉ</label>
+                <div style="border:2px dashed var(--color-border);border-radius:var(--radius-xl);padding:var(--space-8);text-align:center;cursor:pointer;background:white"
+                  onclick="showToast('Mở file picker...', 'info')">
+                  <div style="font-size:32px;margin-bottom:8px">📎</div>
+                  <div style="font-size:14px;color:var(--color-text-muted)">Kéo thả file PDF/JPG hoặc <span style="color:var(--color-primary-600);font-weight:600">click để chọn</span></div>
+                  <div style="font-size:12px;color:var(--color-text-muted);margin-top:4px">PDF, JPG, PNG tối đa 10MB</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:var(--space-4)">
+                <button class="btn btn--primary" onclick="addCert()">✅ Thêm chứng chỉ</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Projects Tab (hidden) -->
+          <div id="tab-projects" class="hidden">
+            <div id="projectsList">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Note Tab (hidden) -->
+          <div id="tab-note" class="hidden">
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">📝 Ghi chú gửi Bucho / DM</span>
+              </div>
+              <div class="card__body">
+                <p class="text-sm text-muted mb-4">Ghi chú này sẽ được gửi kèm khi bạn submit profile để Bucho review. Hãy chia sẻ về dự án vừa rồi, nguyện vọng công việc, hoặc bất kỳ điều gì bạn muốn team biết.</p>
+                <div class="form-group">
+                  <label class="form-label">Ghi chú về dự án vừa kết thúc</label>
+                  <textarea class="form-control" rows="4" placeholder="VD: Trong dự án Alpha tôi đã học thêm Kubernetes deployment và đã hoàn thành thi AWS SAP..."></textarea>
+                </div>
+                <div class="form-group mt-4">
+                  <label class="form-label">Nguyện vọng dự án tiếp theo</label>
+                  <textarea class="form-control" rows="3" placeholder="VD: Tôi muốn tham gia dự án liên quan đến Cloud Architecture hoặc AI/ML..."></textarea>
+                </div>
+                <div class="form-group mt-4">
+                  <label class="form-label form-label--optional">Có muốn onsite Nhật không? (nếu đang ở VN)</label>
+                  <div style="display:flex;gap:16px;margin-top:8px">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                      <input type="radio" name="onsite" value="yes"> Có, sẵn sàng
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                      <input type="radio" name="onsite" value="maybe"> Cân nhắc
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px">
+                      <input type="radio" name="onsite" value="no"> Không
+                    </label>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;margin-top:var(--space-6)">
+                  <button class="btn btn--primary" onclick="showToast('Đã lưu ghi chú!', 'success')">💾 Lưu ghi chú</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit banner -->
+          <div class="submit-banner">
+            <div class="submit-banner__text">
+              <div class="submit-banner__title">🚀 Đã cập nhật xong?</div>
+              <div class="submit-banner__desc">Gửi cho Bucho Yamada-san review và approve. Thường trong vòng 2 ngày.</div>
+            </div>
+            <div style="display:flex;gap:12px">
+              <button class="btn btn--secondary" onclick="saveDraft()">💾 Lưu nháp</button>
+              <button class="btn btn--success btn--lg" onclick="submitForReview()">📤 Gửi duyệt →</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/mockData.js"></script>
+<script src="js/components.js"></script>
+<script>
+  document.body.dataset.role = 'engineer';
+  renderSidebar('engineer');
+  attachLangSelector();
+  function onLangChange() { renderSkills(); renderCerts(); }
+
+  // Skills data
+  const SKILLS_DATA = [
+    { name: 'Java',        cat: 'backend',  level: 5, years: 6, lastUsed: '2 tháng trước', note: '' },
+    { name: 'Spring Boot', cat: 'backend',  level: 5, years: 5, lastUsed: '2 tháng trước', note: '' },
+    { name: 'Microservices',cat:'backend',  level: 4, years: 3, lastUsed: '2 tháng trước', note: '' },
+    { name: 'Python',      cat: 'backend',  level: 3, years: 1, lastUsed: '8 tháng trước', note: '' },
+    { name: 'Node.js',     cat: 'backend',  level: 2, years: 1, lastUsed: '1 năm trước',   note: '' },
+    { name: 'AWS',         cat: 'devops',   level: 4, years: 3, lastUsed: '2 tháng trước', note: '⭐ AWS SAA certified' },
+    { name: 'Docker',      cat: 'devops',   level: 4, years: 3, lastUsed: '2 tháng trước', note: '' },
+    { name: 'Kubernetes',  cat: 'devops',   level: 3, years: 1, lastUsed: '2 tháng trước', note: '🆕 Học trong dự án Alpha' },
+    { name: 'PostgreSQL',  cat: 'database', level: 4, years: 4, lastUsed: '2 tháng trước', note: '' },
+    { name: 'MySQL',       cat: 'database', level: 3, years: 3, lastUsed: '6 tháng trước', note: '' },
+    { name: 'Scrum/Agile', cat: 'other',    level: 4, years: 4, lastUsed: '2 tháng trước', note: '' },
+  ];
+
+  // Certs data
+  const CERTS_DATA = [
+    {
+      name: 'AWS Solutions Architect Associate', org: 'Amazon Web Services',
+      achieved: '15/06/2024', expires: '15/06/2027', status: 'active',
+      daysLeft: 470,
+    },
+    {
+      name: 'Oracle Certified Java Professional (OCP)', org: 'Oracle',
+      achieved: '20/03/2022', expires: null, status: 'active',
+      daysLeft: null,
+    },
+  ];
+
+  // Projects data
+  const PROJECTS_DATA = [
+    {
+      name: 'Dự án Alpha', client: 'Toshiba Corporation',
+      period: '07/2025 – 02/2026 (8 tháng)', role: 'Tech Lead', workload: '100%',
+      stack: ['Java', 'Spring Boot', 'AWS', 'Kubernetes', 'PostgreSQL'],
+      desc: 'Lead team 5 người xây dựng hệ thống quản lý kho hàng cho Toshiba. Kiến trúc microservices trên AWS EKS.',
+      rating: 5, ratingNote: '"Excellent performance, delivered on time" — Yamada-san',
+    },
+    {
+      name: 'Dự án Beta', client: 'Sony Group Corporation',
+      period: '01/2024 – 06/2025 (18 tháng)', role: 'Senior Developer', workload: '100%',
+      stack: ['Java', 'Microservices', 'Docker', 'Kafka', 'MySQL'],
+      desc: 'Xây dựng hệ thống streaming data real-time cho Sony Music platform.',
+      rating: 4, ratingNote: '"Strong technical skills, good team player" — DM Tanaka',
+    },
+    {
+      name: 'Dự án Gamma', client: 'NTT Data',
+      period: '06/2022 – 12/2023 (19 tháng)', role: 'Developer', workload: '100%',
+      stack: ['Java', 'Spring Boot', 'Oracle DB', 'Linux'],
+      desc: 'Phát triển module billing cho hệ thống nội bộ NTT Data.',
+      rating: 4, ratingNote: '"Reliable and fast learner" — PM Suzuki',
+    },
+  ];
+
+  let currentSkillCat = 'all';
+  let newSkillRating = 3;
+
+  // Render skills
+  function renderSkills(cat) {
+    const list = cat === 'all' ? SKILLS_DATA : SKILLS_DATA.filter(s => s.cat === cat);
+    const catLabels = { backend:'Backend', devops:'DevOps', database:'Database', other:'Khác' };
+
+    // Group by category if showing all
+    let html = '';
+    if (cat === 'all') {
+      const cats = ['backend','devops','database','other'];
+      cats.forEach(c => {
+        const items = SKILLS_DATA.filter(s => s.cat === c);
+        if (!items.length) return;
+        html += `<div class="skill-item" style="background:var(--color-gray-50);cursor:default">
+          <span style="font-size:12px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;text-transform:uppercase">${catLabels[c]}</span>
+        </div>`;
+        html += items.map(s => renderSkillItem(s)).join('');
+      });
+    } else {
+      html = list.map(s => renderSkillItem(s)).join('');
+    }
+
+    document.getElementById('skillsContainer').innerHTML = html;
+  }
+
+  function renderSkillItem(s) {
+    const starsHtml = Array.from({length:5}, (_,i) =>
+      `<span class="star ${i < s.level ? 'star--filled' : ''}">★</span>`).join('');
+    const noteHtml = s.note ? `<span class="badge badge--primary" style="font-size:10px">${s.note}</span>` : '';
+
+    return `
+      <div class="skill-item">
+        <div class="skill-item__name">${s.name}</div>
+        <div class="skill-item__stars"><div class="stars">${starsHtml}</div></div>
+        <div class="skill-item__meta">
+          <span class="skill-item__years">⏱ ${s.years} năm</span>
+          <span class="skill-item__last-used">Dùng gần nhất: ${s.lastUsed}</span>
+          ${noteHtml}
+        </div>
+        <div class="skill-item__actions" style="display:flex;gap:8px">
+          <button class="btn btn--sm btn--ghost" onclick="editSkill('${s.name}')">✏️</button>
+          <button class="btn btn--sm btn--ghost" style="color:var(--color-danger)" onclick="removeSkill('${s.name}')">🗑</button>
+        </div>
+      </div>`;
+  }
+
+  // Render certs
+  function renderCerts() {
+    document.getElementById('certsList').innerHTML = CERTS_DATA.map(c => {
+      const expiryClass = c.daysLeft === null ? '' : c.daysLeft > 180 ? 'cert-card__expiry--ok' : c.daysLeft > 60 ? 'cert-card__expiry--warn' : 'cert-card__expiry--expired';
+      const expiryText = c.expires
+        ? `Hết hạn: ${c.expires} ${c.daysLeft !== null ? `(còn ${c.daysLeft} ngày)` : ''}` : 'Không hết hạn ♾️';
+
+      return `
+        <div class="cert-card">
+          <div class="cert-card__icon">🏅</div>
+          <div class="cert-card__info">
+            <div class="cert-card__name">${c.name}</div>
+            <div class="cert-card__org">${c.org}</div>
+            <div class="cert-card__dates">
+              <span>Đạt được: ${c.achieved}</span>
+              <span class="${expiryClass}">${expiryText}</span>
+            </div>
+          </div>
+          <div class="cert-card__status">
+            <span class="badge ${c.status === 'active' ? 'badge--available' : 'badge--busy'}">
+              ${c.status === 'active' ? '✅ Active' : '❌ Expired'}
+            </span>
+            <button class="btn btn--sm btn--secondary">📎 Xem file</button>
+            <button class="btn btn--sm btn--ghost" style="color:var(--color-danger)">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Render projects
+  function renderProjects() {
+    document.getElementById('projectsList').innerHTML = PROJECTS_DATA.map(p => `
+      <div class="project-item">
+        <div class="project-item__header">
+          <div>
+            <div class="project-item__name">${p.name}</div>
+            <div class="project-item__client">📌 ${p.client}</div>
+          </div>
+          <div class="project-item__period">${p.period}</div>
+        </div>
+        <div class="project-item__meta">
+          <span class="badge badge--primary">🎭 ${p.role}</span>
+          <span class="badge badge--neutral">⏱ ${p.workload}</span>
+          ${p.stack.map(t => `<span class="skill-tag">${t}</span>`).join('')}
+        </div>
+        <div class="project-item__desc">${p.desc}</div>
+        <div class="project-item__rating">
+          <div class="stars">${Array.from({length:5},(_,i)=>`<span class="star ${i<p.rating?'star--filled':''}">★</span>`).join('')}</div>
+          <span style="font-style:italic">${p.ratingNote}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // Tab switching
+  function switchTab(tabId, btn) {
+    ['skills','certs','projects','note'].forEach(t => {
+      document.getElementById('tab-' + t).classList.add('hidden');
+    });
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('tab--active'));
+    document.getElementById('tab-' + tabId).classList.remove('hidden');
+    btn.classList.add('tab--active');
+
+    if (tabId === 'certs') renderCerts();
+    if (tabId === 'projects') renderProjects();
+  }
+
+  // Skill category filter
+  function filterSkillCat(cat, btn) {
+    currentSkillCat = cat;
+    document.querySelectorAll('.skill-tab-btn').forEach(b => b.classList.remove('skill-tab-btn--active'));
+    btn.classList.add('skill-tab-btn--active');
+    renderSkills(cat);
+  }
+
+  // Star rating
+  function setStarRating(val) {
+    newSkillRating = val;
+    document.querySelectorAll('#newSkillStars .star-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i < val);
+    });
+  }
+
+  // Add new skill
+  function addNewSkill() {
+    const name = document.getElementById('newSkillName').value.trim();
+    if (!name) { showToast('Vui lòng nhập tên skill!', 'warning'); return; }
+    const years = document.getElementById('newSkillYears').value;
+    SKILLS_DATA.unshift({ name, cat: 'backend', level: newSkillRating, years: years, lastUsed: 'Vừa thêm', note: '🆕 Mới thêm' });
+    document.getElementById('newSkillName').value = '';
+    renderSkills(currentSkillCat);
+    showToast(`Đã thêm skill: ${name}`, 'success');
+  }
+
+  function editSkill(name) { showToast(`Đang chỉnh sửa: ${name}`, 'info'); }
+  function removeSkill(name) {
+    const idx = SKILLS_DATA.findIndex(s => s.name === name);
+    if (idx !== -1) { SKILLS_DATA.splice(idx, 1); renderSkills(currentSkillCat); showToast(`Đã xóa: ${name}`, 'warning'); }
+  }
+
+  function addCert() { showToast('Đã thêm chứng chỉ! Chờ Bucho duyệt.', 'success'); }
+
+  function addGoal() { showToast('Tính năng đang phát triển...', 'info'); }
+
+  function saveDraft() { showToast('Đã lưu nháp thành công!', 'success'); }
+
+  function submitForReview() {
+    showToast('Đã gửi cho Bucho Yamada-san duyệt! Thường trong 2 ngày.', 'success');
+  }
+
+  // Init
+  renderSkills('all');
+</script>
+</body>
+</html>
