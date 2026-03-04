@@ -60,6 +60,8 @@ class EmployeeListItem(BaseModel):
     is_active: bool
     avatar_url: str | None = None
     japanese_level: str | None = None
+    workload_percent: int | None = None
+    is_mobilizable: bool = False
 
     model_config = {"from_attributes": True}
 

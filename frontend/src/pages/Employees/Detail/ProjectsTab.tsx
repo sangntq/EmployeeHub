@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Button,
   Card,
+  Checkbox,
   DatePicker,
   Form,
   Input,
@@ -23,9 +24,29 @@ import type { EmployeeProjectItem } from '../../../api/projects'
 
 const PROJECT_ROLES = ['PL', 'PM', 'SE', 'PG', 'QA', 'INFRA', 'DESIGNER', 'OTHER']
 
+const PROCESS_PHASES = [
+  '要件定義', '基本設計', '詳細設計', '製造・実装',
+  '単体テスト', '結合テスト', '総合テスト', '運用・保守',
+]
+
 interface Props {
   employeeId: string
-  canEdit: boolean  // 本人 or manager以上
+  canEdit: boolean
+}
+
+type FormValues = {
+  project_name: string
+  client_name?: string
+  industry?: string
+  role: string
+  started_at: dayjs.Dayjs
+  ended_at?: dayjs.Dayjs
+  tech_stack_input?: string
+  team_size?: number
+  responsibilities?: string
+  achievements?: string
+  process_phases?: string[]
+  lessons_learned?: string
 }
 
 export default function ProjectsTab({ employeeId, canEdit }: Props) {
@@ -34,7 +55,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
   const [messageApi, ctx] = message.useMessage()
   const [addOpen, setAddOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<EmployeeProjectItem | null>(null)
-  const [form] = Form.useForm()
+  const [form] = Form.useForm<FormValues>()
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['employee-projects', employeeId],
@@ -42,18 +63,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
   })
 
   const addMutation = useMutation({
-    mutationFn: (values: {
-      project_name: string
-      client_name?: string
-      industry?: string
-      role: string
-      started_at: dayjs.Dayjs
-      ended_at?: dayjs.Dayjs
-      tech_stack_input?: string
-      team_size?: number
-      responsibilities?: string
-      achievements?: string
-    }) =>
+    mutationFn: (values: FormValues) =>
       projectsApi.addProject(employeeId, {
         project_name: values.project_name,
         client_name: values.client_name,
@@ -67,6 +77,8 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
         team_size: values.team_size,
         responsibilities: values.responsibilities,
         achievements: values.achievements,
+        process_phases: values.process_phases ?? null,
+        lessons_learned: values.lessons_learned,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employee-projects', employeeId] })
@@ -78,18 +90,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
   })
 
   const editMutation = useMutation({
-    mutationFn: (values: {
-      project_name?: string
-      client_name?: string
-      industry?: string
-      role?: string
-      started_at?: dayjs.Dayjs
-      ended_at?: dayjs.Dayjs
-      tech_stack_input?: string
-      team_size?: number
-      responsibilities?: string
-      achievements?: string
-    }) =>
+    mutationFn: (values: FormValues) =>
       projectsApi.updateProject(editTarget!.id, {
         project_name: values.project_name,
         client_name: values.client_name,
@@ -103,6 +104,8 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
         team_size: values.team_size,
         responsibilities: values.responsibilities,
         achievements: values.achievements,
+        process_phases: values.process_phases ?? null,
+        lessons_learned: values.lessons_learned,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employee-projects', employeeId] })
@@ -125,15 +128,17 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
   const handleOpenEdit = (proj: EmployeeProjectItem) => {
     form.setFieldsValue({
       project_name: proj.project.name,
-      client_name: proj.project.client_name,
-      industry: proj.project.industry,
+      client_name: proj.project.client_name ?? undefined,
+      industry: proj.project.industry ?? undefined,
       role: proj.role,
       started_at: dayjs(proj.started_at),
       ended_at: proj.ended_at ? dayjs(proj.ended_at) : undefined,
       tech_stack_input: proj.tech_stack ? proj.tech_stack.join(', ') : '',
-      team_size: proj.team_size,
-      responsibilities: proj.responsibilities,
-      achievements: proj.achievements,
+      team_size: proj.team_size ?? undefined,
+      responsibilities: proj.responsibilities ?? undefined,
+      achievements: proj.achievements ?? undefined,
+      process_phases: proj.process_phases ?? [],
+      lessons_learned: proj.lessons_learned ?? undefined,
     })
     setEditTarget(proj)
   }
@@ -151,7 +156,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
     <Form
       form={form}
       layout="vertical"
-      onFinish={values => isEditing ? editMutation.mutate(values) : addMutation.mutate(values)}
+      onFinish={(values: FormValues) => isEditing ? editMutation.mutate(values) : addMutation.mutate(values)}
     >
       <Form.Item name="project_name" label={t('project.name')} rules={[{ required: true, message: t('project.nameRequired') }]}>
         <Input />
@@ -185,7 +190,13 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
         <Input.TextArea rows={3} />
       </Form.Item>
       <Form.Item name="achievements" label={t('project.achievements')}>
-        <Input.TextArea rows={3} />
+        <Input.TextArea rows={2} />
+      </Form.Item>
+      <Form.Item name="process_phases" label={t('project.processPhases')}>
+        <Checkbox.Group options={PROCESS_PHASES} style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }} />
+      </Form.Item>
+      <Form.Item name="lessons_learned" label={t('project.lessonsLearned')}>
+        <Input.TextArea rows={3} placeholder={t('project.lessonsLearnedPlaceholder')} />
       </Form.Item>
     </Form>
   )
@@ -219,11 +230,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
               extra={
                 canEdit && (
                   <Space>
-                    <Button
-                      size="small"
-                      icon={<EditOutlined />}
-                      onClick={() => handleOpenEdit(proj)}
-                    />
+                    <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenEdit(proj)} />
                     <Popconfirm
                       title={t('project.deleteConfirm')}
                       onConfirm={() => deleteMutation.mutate(proj.id)}
@@ -254,8 +261,18 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
               </div>
               {proj.tech_stack && proj.tech_stack.length > 0 && (
                 <div style={{ marginTop: 8 }}>
-                  {proj.tech_stack.map(t => (
-                    <Tag key={t} style={{ marginBottom: 4 }}>{t}</Tag>
+                  {proj.tech_stack.map(tech => (
+                    <Tag key={tech} style={{ marginBottom: 4 }}>{tech}</Tag>
+                  ))}
+                </div>
+              )}
+              {proj.process_phases && proj.process_phases.length > 0 && (
+                <div style={{ marginTop: 6, fontSize: 12 }}>
+                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    {t('project.processPhases')}:{' '}
+                  </Typography.Text>
+                  {proj.process_phases.map(ph => (
+                    <Tag key={ph} color="geekblue" style={{ fontSize: 11, marginBottom: 2 }}>{ph}</Tag>
                   ))}
                 </div>
               )}
@@ -265,6 +282,14 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
                   ellipsis={{ rows: 2, expandable: true }}
                 >
                   {proj.responsibilities}
+                </Typography.Paragraph>
+              )}
+              {proj.lessons_learned && (
+                <Typography.Paragraph
+                  style={{ marginTop: 4, marginBottom: 0, fontSize: 12, color: '#666' }}
+                  ellipsis={{ rows: 1, expandable: true }}
+                >
+                  💡 {proj.lessons_learned}
                 </Typography.Paragraph>
               )}
             </Card>
@@ -280,7 +305,7 @@ export default function ProjectsTab({ employeeId, canEdit }: Props) {
         confirmLoading={addMutation.isPending || editMutation.isPending}
         okText={t('action.save')}
         cancelText={t('action.cancel')}
-        width={600}
+        width={640}
       >
         {ProjectForm}
       </Modal>

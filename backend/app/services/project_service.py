@@ -29,7 +29,6 @@ async def add_employee_project(
     creator_id: str,
 ) -> EmployeeProject:
     """プロジェクト経歴を追加する。プロジェクトマスタに自動作成する。"""
-    # プロジェクトマスタに新規登録
     project = Project(
         id=str(uuid.uuid4()),
         name=data.project_name,
@@ -43,7 +42,6 @@ async def add_employee_project(
     db.add(project)
     await db.flush()
 
-    # 現在の最大 sort_order を取得
     result = await db.execute(
         select(EmployeeProject.sort_order)
         .where(EmployeeProject.employee_id == employee_id)
@@ -63,6 +61,8 @@ async def add_employee_project(
         team_size=data.team_size,
         responsibilities=data.responsibilities,
         achievements=data.achievements,
+        process_phases=data.process_phases,
+        lessons_learned=data.lessons_learned,
         sort_order=max_order + 1,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -84,7 +84,6 @@ async def update_employee_project(
     if emp_proj is None or emp_proj.employee_id != employee_id:
         raise HTTPException(status_code=404, detail="Project record not found")
 
-    # プロジェクトマスタも更新
     proj = await db.get(Project, emp_proj.project_id)
     if proj and data.project_name is not None:
         proj.name = data.project_name
@@ -107,6 +106,10 @@ async def update_employee_project(
         emp_proj.responsibilities = data.responsibilities
     if data.achievements is not None:
         emp_proj.achievements = data.achievements
+    if data.process_phases is not None:
+        emp_proj.process_phases = data.process_phases
+    if data.lessons_learned is not None:
+        emp_proj.lessons_learned = data.lessons_learned
     emp_proj.updated_at = datetime.now(UTC)
 
     await db.commit()

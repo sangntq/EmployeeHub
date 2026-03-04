@@ -13,6 +13,9 @@ export interface EmployeeListItem {
   work_style: string
   is_active: boolean
   avatar_url: string | null
+  japanese_level: string | null
+  workload_percent: number | null
+  is_mobilizable: boolean
 }
 
 export interface EmployeeDetail extends EmployeeListItem {

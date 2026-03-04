@@ -24,6 +24,9 @@ frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
+# Python /backend
+backend\exports
+
 # IDE
 .vscode/
 .idea/

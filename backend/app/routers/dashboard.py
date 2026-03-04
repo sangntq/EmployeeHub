@@ -12,6 +12,7 @@ from app.schemas.dashboard import (
     FreeForecastResponse,
     HeadcountTrendResponse,
     LocationDistributionResponse,
+    MobilizableSummaryResponse,
     SkillHeatmapResponse,
     SkillsDistributionResponse,
     UtilizationTrendResponse,
@@ -98,3 +99,12 @@ async def get_location_distribution(
 ):
     """拠点別在籍人数分布。"""
     return await dashboard_service.get_location_distribution(db)
+
+
+@router.get("/dashboard/mobilizable", response_model=MobilizableSummaryResponse)
+async def get_mobilizable_summary(
+    db: AsyncSession = Depends(get_db),
+    _: Employee = Depends(require_role(*DASHBOARD_ROLES)),
+):
+    """モバイル可能者サマリー（HANOI/HCMC の在籍社員 + ビザ状況）。"""
+    return await dashboard_service.get_mobilizable_summary(db)

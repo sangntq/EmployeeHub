@@ -111,3 +111,11 @@ class DistributionItem(BaseModel):
 
 class LocationDistributionResponse(BaseModel):
     items: list[DistributionItem]
+
+
+# ── Mobilizable Summary ───────────────────────────────────────────────────────
+
+class MobilizableSummaryResponse(BaseModel):
+    total: int           # HANOI/HCMC 在籍社員数
+    valid_visa: int      # ビザ有効期限 30日超
+    need_visa: int       # ビザ期限間近または未登録

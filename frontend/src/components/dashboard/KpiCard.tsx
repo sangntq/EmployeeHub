@@ -4,13 +4,13 @@
  * ダッシュボード上部の4枚の統計カード（総社員数・稼働中・フリー・承認待ち）に使用する。
  */
 import { Card, Statistic } from 'antd'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 interface KpiCardProps {
   title: string
   value: number | string
   suffix?: string
-  valueStyle?: { color?: string }
+  valueStyle?: CSSProperties
   icon?: ReactNode
   extra?: ReactNode
   onClick?: () => void

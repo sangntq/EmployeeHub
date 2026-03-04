@@ -17,6 +17,8 @@ class EmployeeProjectCreate(BaseModel):
     team_size: Optional[int] = None
     responsibilities: Optional[str] = None
     achievements: Optional[str] = None
+    process_phases: Optional[list[str]] = None
+    lessons_learned: Optional[str] = None
 
 
 class EmployeeProjectUpdate(BaseModel):
@@ -30,6 +32,8 @@ class EmployeeProjectUpdate(BaseModel):
     team_size: Optional[int] = None
     responsibilities: Optional[str] = None
     achievements: Optional[str] = None
+    process_phases: Optional[list[str]] = None
+    lessons_learned: Optional[str] = None
 
 
 class ProjectInfo(BaseModel):
@@ -53,6 +57,8 @@ class EmployeeProjectResponse(BaseModel):
     team_size: Optional[int] = None
     responsibilities: Optional[str] = None
     achievements: Optional[str] = None
+    process_phases: Optional[list[str]] = None
+    lessons_learned: Optional[str] = None
     sort_order: int
     created_at: datetime
     updated_at: datetime

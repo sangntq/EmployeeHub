@@ -30,10 +30,23 @@ function Root() {
         locale={antdLocaleMap[currentLang] ?? jaJP}
         theme={{
           token: {
-            colorPrimary: '#1677ff',
-            borderRadius: 6,
+            colorPrimary: '#4F46E5',
+            colorSuccess: '#10B981',
+            colorWarning: '#F59E0B',
+            colorError: '#EF4444',
+            borderRadius: 8,
             fontFamily:
-              '"Noto Sans JP", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              'Inter, "Noto Sans JP", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          },
+          components: {
+            Layout: {
+              siderBg: '#1E1B4B',
+            },
+            Menu: {
+              darkItemBg: '#1E1B4B',
+              darkItemSelectedBg: '#4F46E5',
+              darkItemHoverBg: 'rgba(79, 70, 229, 0.3)',
+            },
           },
         }}
       >

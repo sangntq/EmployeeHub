@@ -9,7 +9,19 @@
     "reports": "レポート",
     "alerts": "アラート",
     "notifications": "通知",
-    "settings": "設定"
+    "availability": "空きカレンダー",
+    "skills": "スキルマトリクス",
+    "certifications": "資格管理",
+    "settings": "設定",
+    "myProfile": "マイプロフィール",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "expandSidebar": "サイドバーを展開する",
+    "group": {
+      "salesTools": "営業ツール",
+      "management": "管理",
+      "personal": "個人",
+      "system": "システム"
+    }
   },
   "action": {
     "save": "保存",
@@ -36,6 +48,12 @@
     "selectAll": "全選択",
     "clearSelection": "選択解除",
     "uploadAvatar": "写真を変更"
+  },
+  "employee": {
+    "workloadPercent": "稼働率",
+    "mobilizable": "出向可能",
+    "detailPanel": "社員詳細",
+    "viewFullProfile": "フルプロフィール"
   },
   "common": {
     "loading": "読み込み中...",
@@ -295,6 +313,9 @@
     "teamSize": "チーム規模",
     "responsibilities": "担当内容",
     "achievements": "成果・実績",
+    "processPhases": "担当工程",
+    "lessonsLearned": "習得スキル・学び",
+    "lessonsLearnedPlaceholder": "このプロジェクトで習得したスキルや知識を記入...",
     "noProjects": "プロジェクト経歴がありません",
     "deleteConfirm": "このプロジェクト経歴を削除しますか？",
     "onGoing": "継続中"
@@ -406,7 +427,11 @@
     "headcountTrend": "入退社トレンド（過去{{months}}ヶ月）",
     "headcountJoined": "入社",
     "headcountLeft": "退社",
-    "locationDistribution": "拠点別人員分布"
+    "locationDistribution": "拠点別人員分布",
+    "mobilizable": "出向可能人材 (VN)",
+    "locationAll": "全拠点",
+    "locationJP": "日本",
+    "locationVN": "ベトナム"
   },
   "alertPage": {
     "title": "アラートダッシュボード",
@@ -416,6 +441,39 @@
     "expiresAt": "有効期限",
     "noAlerts": "アラートはありません",
     "openProfile": "プロフィールを開く"
+  },
+  "availability": {
+    "title": "空きカレンダー",
+    "free": "空き",
+    "partial": "一部",
+    "busy": "稼働中",
+    "totalFree": "空き合計",
+    "offsetLabel": "表示期間",
+    "legend": "凡例",
+    "engineer": "エンジニア",
+    "noData": "データなし"
+  },
+  "skillMatrix": {
+    "title": "スキルマトリクス",
+    "engineers": "エンジニア数",
+    "uniqueSkills": "スキル数",
+    "freeOnly": "空きのみ",
+    "levelMin": "最低レベル",
+    "noSkill": "—",
+    "rating": "評価",
+    "certCount": "資格数",
+    "certHolders": "資格保有者",
+    "expandHint": "行をクリックでスキル詳細を表示"
+  },
+  "certOverview": {
+    "title": "資格管理",
+    "totalCerts": "資格種別",
+    "totalHolders": "保有者数",
+    "expiringSoon": "期限間近（60日）",
+    "topCategory": "カテゴリ",
+    "soonBadge": "期限間近",
+    "validBadge": "有効",
+    "noExpiryBadge": "期限なし"
   },
   "skillSheet": {
     "title": "スキルシート出力",
@@ -434,5 +492,13 @@
     "exportSuccess": "ダウンロードを開始しました",
     "exportError": "出力中にエラーが発生しました",
     "searchEmployee": "社員を検索..."
+  },
+  "notes": {
+    "tab": "メモ",
+    "newNote": "新規メモ",
+    "placeholder": "マネージャーメモを入力...",
+    "addNote": "追加",
+    "empty": "メモがありません",
+    "edited": "編集済み"
   }
 }

@@ -9,7 +9,19 @@
     "reports": "Báo cáo",
     "alerts": "Cảnh báo",
     "notifications": "Thông báo",
-    "settings": "Cài đặt"
+    "availability": "Lịch trống",
+    "skills": "Skill Matrix",
+    "certifications": "Chứng chỉ",
+    "settings": "Cài đặt",
+    "myProfile": "Hồ sơ của tôi",
+    "collapseSidebar": "Thu gọn menu",
+    "expandSidebar": "Mở rộng menu",
+    "group": {
+      "salesTools": "Công cụ Sales",
+      "management": "Quản lý",
+      "personal": "Cá nhân",
+      "system": "Hệ thống"
+    }
   },
   "action": {
     "save": "Lưu",
@@ -36,6 +48,12 @@
     "selectAll": "Chọn tất cả",
     "clearSelection": "Bỏ chọn",
     "uploadAvatar": "Đổi ảnh"
+  },
+  "employee": {
+    "workloadPercent": "Tỉ lệ làm việc",
+    "mobilizable": "Có thể điều phối",
+    "detailPanel": "Chi tiết nhân sự",
+    "viewFullProfile": "Xem đầy đủ"
   },
   "common": {
     "loading": "Đang tải...",
@@ -294,7 +312,10 @@
     "techStackPlaceholder": "Phân cách bằng dấu phẩy: Java, Spring Boot",
     "teamSize": "Quy mô nhóm",
     "responsibilities": "Công việc đảm nhận",
-    "achievements": "Thành tựu",
+    "achievements": "Kết quả đạt được",
+    "processPhases": "Công đoạn đảm nhận",
+    "lessonsLearned": "Kỹ năng học được",
+    "lessonsLearnedPlaceholder": "Nhập kỹ năng/kiến thức học được từ dự án này...",
     "noProjects": "Chưa có kinh nghiệm dự án",
     "deleteConfirm": "Xóa kinh nghiệm dự án này?",
     "onGoing": "Đang tiến hành"
@@ -406,7 +427,11 @@
     "headcountTrend": "Biến động nhân sự ({{months}} tháng)",
     "headcountJoined": "Gia nhập",
     "headcountLeft": "Rời công ty",
-    "locationDistribution": "Phân bố theo văn phòng"
+    "locationDistribution": "Phân bố theo văn phòng",
+    "mobilizable": "Có thể điều phối (VN)",
+    "locationAll": "Tất cả",
+    "locationJP": "Nhật Bản",
+    "locationVN": "Việt Nam"
   },
   "alertPage": {
     "title": "Bảng cảnh báo",
@@ -416,6 +441,39 @@
     "expiresAt": "Ngày hết hạn",
     "noAlerts": "Không có cảnh báo",
     "openProfile": "Mở hồ sơ"
+  },
+  "availability": {
+    "title": "Lịch trống",
+    "free": "Rảnh",
+    "partial": "Một phần",
+    "busy": "Bận",
+    "totalFree": "Tổng rảnh",
+    "offsetLabel": "Kỳ hiển thị",
+    "legend": "Chú giải",
+    "engineer": "Kỹ sư",
+    "noData": "Không có dữ liệu"
+  },
+  "skillMatrix": {
+    "title": "Ma trận kỹ năng",
+    "engineers": "Số kỹ sư",
+    "uniqueSkills": "Số kỹ năng",
+    "freeOnly": "Chỉ rảnh",
+    "levelMin": "Cấp độ tối thiểu",
+    "noSkill": "—",
+    "rating": "Xếp hạng",
+    "certCount": "Số chứng chỉ",
+    "certHolders": "Người có chứng chỉ",
+    "expandHint": "Nhấn vào hàng để xem chi tiết kỹ năng"
+  },
+  "certOverview": {
+    "title": "Quản lý chứng chỉ",
+    "totalCerts": "Loại chứng chỉ",
+    "totalHolders": "Người sở hữu",
+    "expiringSoon": "Sắp hết hạn (60 ngày)",
+    "topCategory": "Danh mục",
+    "soonBadge": "Sắp hết hạn",
+    "validBadge": "Còn hiệu lực",
+    "noExpiryBadge": "Không hết hạn"
   },
   "skillSheet": {
     "title": "Xuất Skill Sheet",
@@ -434,5 +492,13 @@
     "exportSuccess": "Đã bắt đầu tải xuống",
     "exportError": "Đã xảy ra lỗi khi xuất file",
     "searchEmployee": "Tìm kiếm nhân viên..."
+  },
+  "notes": {
+    "tab": "Ghi chú",
+    "newNote": "Ghi chú mới",
+    "placeholder": "Nhập ghi chú của manager...",
+    "addNote": "Thêm",
+    "empty": "Chưa có ghi chú",
+    "edited": "Đã sửa"
   }
 }

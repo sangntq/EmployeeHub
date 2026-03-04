@@ -12,8 +12,15 @@ import {
   Row,
   Col,
   Switch,
+  Progress,
 } from 'antd'
-import { SearchOutlined, UserAddOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  SearchOutlined,
+  UserAddOutlined,
+  UserOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +28,8 @@ import { employeesApi } from '../../../api/employees'
 import type { EmployeeListItem, EmployeeListParams } from '../../../api/employees'
 import PageHeader from '../../../components/common/PageHeader'
 import { useAuth } from '../../../hooks/useAuth'
+import EmployeeCard from './EmployeeCard'
+import EmployeeDetailPanel from './EmployeeDetailPanel'
 
 const { Option } = Select
 
@@ -32,6 +41,9 @@ export default function EmployeeListPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
+
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table')
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
 
   const [params, setParams] = useState<EmployeeListParams>({
     page: 1,
@@ -60,7 +72,12 @@ export default function EmployeeListPage() {
             style={{ flexShrink: 0 }}
           />
           <Space direction="vertical" size={0}>
-            <Typography.Link onClick={() => navigate(`/employees/${rec.id}`)}>
+            <Typography.Link
+              onClick={e => {
+                e.stopPropagation()
+                setSelectedEmployeeId(rec.id)
+              }}
+            >
               {rec.name_ja}
             </Typography.Link>
             {rec.name_en && (
@@ -100,10 +117,44 @@ export default function EmployeeListPage() {
       render: (loc: string) => t(`officeLocation.${loc}`),
     },
     {
-      title: t('common.workStyle'),
-      dataIndex: 'work_style',
-      width: 90,
-      render: (ws: string) => t(`workStyle.${ws}`),
+      title: t('employee.workloadPercent'),
+      key: 'workload',
+      width: 140,
+      render: (_: unknown, rec: EmployeeListItem) =>
+        rec.workload_percent != null ? (
+          <div style={{ minWidth: 110 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: 11, marginBottom: 2 }}>
+              <span>{rec.workload_percent}%</span>
+            </div>
+            <Progress
+              percent={Math.min(rec.workload_percent, 100)}
+              size="small"
+              showInfo={false}
+              strokeColor={
+                rec.workload_percent >= 100
+                  ? '#EF4444'
+                  : rec.workload_percent >= 50
+                    ? '#F59E0B'
+                    : '#10B981'
+              }
+            />
+          </div>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            —
+          </Typography.Text>
+        ),
+    },
+    {
+      title: '✈️',
+      key: 'mobilizable',
+      width: 52,
+      render: (_: unknown, rec: EmployeeListItem) =>
+        rec.is_mobilizable ? (
+          <Tooltip title={t('employee.mobilizable')}>
+            <span style={{ fontSize: 18 }}>✈️</span>
+          </Tooltip>
+        ) : null,
     },
     {
       title: t('common.status'),
@@ -116,22 +167,6 @@ export default function EmployeeListPage() {
           <Tag color="default">{t('common.inactive')}</Tag>
         ),
     },
-    {
-      title: '',
-      key: 'action',
-      width: 60,
-      render: (_: unknown, rec: EmployeeListItem) => (
-        <Tooltip title={t('action.view')}>
-          <Button
-            type="text"
-            size="small"
-            onClick={() => navigate(`/employees/${rec.id}`)}
-          >
-            {t('action.view')}
-          </Button>
-        </Tooltip>
-      ),
-    },
   ]
 
   return (
@@ -140,15 +175,30 @@ export default function EmployeeListPage() {
         title={t('page.employees')}
         breadcrumbs={[{ title: t('page.employees') }]}
         extra={
-          isAdmin() && (
-            <Button
-              type="primary"
-              icon={<UserAddOutlined />}
-              onClick={() => navigate('/employees/new')}
-            >
-              {t('action.add')}
-            </Button>
-          )
+          <Space>
+            {/* テーブル/カード切替ボタングループ */}
+            <Button.Group>
+              <Button
+                icon={<UnorderedListOutlined />}
+                type={viewMode === 'table' ? 'primary' : 'default'}
+                onClick={() => setViewMode('table')}
+              />
+              <Button
+                icon={<AppstoreOutlined />}
+                type={viewMode === 'card' ? 'primary' : 'default'}
+                onClick={() => setViewMode('card')}
+              />
+            </Button.Group>
+            {isAdmin() && (
+              <Button
+                type="primary"
+                icon={<UserAddOutlined />}
+                onClick={() => navigate('/employees/new')}
+              >
+                {t('action.add')}
+              </Button>
+            )}
+          </Space>
         }
       />
 
@@ -215,21 +265,71 @@ export default function EmployeeListPage() {
         </Col>
       </Row>
 
-      <Table<EmployeeListItem>
-        rowKey="id"
-        columns={columns}
-        dataSource={data?.items ?? []}
-        loading={isLoading}
-        pagination={{
-          current: params.page,
-          pageSize: params.per_page,
-          total: data?.total ?? 0,
-          showSizeChanger: true,
-          showTotal: total => `${total} ${t('common.people')}`,
-          onChange: (page, per_page) => setParams(p => ({ ...p, page, per_page })),
-        }}
-        onRow={rec => ({ onClick: () => navigate(`/employees/${rec.id}`), style: { cursor: 'pointer' } })}
-        size="middle"
+      {/* テーブルビュー */}
+      {viewMode === 'table' && (
+        <Table<EmployeeListItem>
+          rowKey="id"
+          columns={columns}
+          dataSource={data?.items ?? []}
+          loading={isLoading}
+          pagination={{
+            current: params.page,
+            pageSize: params.per_page,
+            total: data?.total ?? 0,
+            showSizeChanger: true,
+            showTotal: total => `${total} ${t('common.people')}`,
+            onChange: (page, per_page) => setParams(p => ({ ...p, page, per_page })),
+          }}
+          onRow={rec => ({
+            onClick: () => setSelectedEmployeeId(rec.id),
+            style: { cursor: 'pointer' },
+          })}
+          size="middle"
+        />
+      )}
+
+      {/* カードビュー */}
+      {viewMode === 'card' && (
+        <div>
+          <Row gutter={[12, 12]}>
+            {(data?.items ?? []).map(emp => (
+              <Col key={emp.id} xs={24} sm={12} lg={8} xl={6}>
+                <EmployeeCard employee={emp} onClick={() => setSelectedEmployeeId(emp.id)} />
+              </Col>
+            ))}
+          </Row>
+          <div style={{ textAlign: 'right', marginTop: 16 }}>
+            <Space>
+              <Typography.Text type="secondary">
+                {data?.total ?? 0} {t('common.people')}
+              </Typography.Text>
+              <Button
+                disabled={(params.page ?? 1) <= 1}
+                onClick={() => setParams(p => ({ ...p, page: (p.page ?? 1) - 1 }))}
+              >
+                {'<'}
+              </Button>
+              <Typography.Text>
+                {params.page} / {Math.max(1, Math.ceil((data?.total ?? 0) / (params.per_page ?? 20)))}
+              </Typography.Text>
+              <Button
+                disabled={
+                  (params.page ?? 1) >=
+                  Math.max(1, Math.ceil((data?.total ?? 0) / (params.per_page ?? 20)))
+                }
+                onClick={() => setParams(p => ({ ...p, page: (p.page ?? 1) + 1 }))}
+              >
+                {'>'}
+              </Button>
+            </Space>
+          </div>
+        </div>
+      )}
+
+      {/* スライドアウト詳細パネル */}
+      <EmployeeDetailPanel
+        employeeId={selectedEmployeeId}
+        onClose={() => setSelectedEmployeeId(null)}
       />
     </div>
   )

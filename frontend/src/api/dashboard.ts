@@ -110,6 +110,14 @@ export interface LocationDistributionResponse {
   items: DistributionItem[]
 }
 
+// ── Mobilizable Summary ───────────────────────────────────────────────────────
+
+export interface MobilizableSummaryResponse {
+  total: number
+  valid_visa: number
+  need_visa: number
+}
+
 // ── API 関数 ─────────────────────────────────────────────────────────────────
 
 export const dashboardApi = {
@@ -146,4 +154,7 @@ export const dashboardApi = {
     apiClient
       .get<LocationDistributionResponse>('/dashboard/location-distribution')
       .then(r => r.data),
+
+  getMobilizable: () =>
+    apiClient.get<MobilizableSummaryResponse>('/dashboard/mobilizable').then(r => r.data),
 }

@@ -51,6 +51,8 @@ class EmployeeProject(Base):
     team_size: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
     responsibilities: Mapped[str | None] = mapped_column(Text, nullable=True)
     achievements: Mapped[str | None] = mapped_column(Text, nullable=True)
+    process_phases: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)  # 担当工程リスト
+    lessons_learned: Mapped[str | None] = mapped_column(Text, nullable=True)  # 習得スキル・学び
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(

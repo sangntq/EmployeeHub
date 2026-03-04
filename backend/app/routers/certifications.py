@@ -19,10 +19,28 @@ from app.schemas.certification import (
     EmployeeCertResponse,
     ApproveCertRequest,
     RejectCertRequest,
+    CertOverviewResponse,
 )
 from app.services import certification_service
 
 router = APIRouter()
+
+# 資格概要閲覧可能なロール
+CERT_OVERVIEW_ROLES = ("manager", "department_head", "director", "admin")
+
+
+@router.get("/certifications/overview", response_model=CertOverviewResponse)
+async def get_cert_overview(
+    location: str | None = Query(None, description="オフィス拠点フィルター"),
+    category: str | None = Query(None, description="資格カテゴリフィルター"),
+    search: str | None = Query(None, description="資格名・社員名の検索"),
+    db: AsyncSession = Depends(get_db),
+    _: Employee = Depends(require_role(*CERT_OVERVIEW_ROLES)),
+):
+    """全社資格概要。manager / department_head / director / admin が利用可能。"""
+    return await certification_service.get_company_cert_overview(
+        db=db, location=location, category=category, search=search
+    )
 
 
 @router.get("/certification-masters", response_model=list[CertificationMasterResponse])

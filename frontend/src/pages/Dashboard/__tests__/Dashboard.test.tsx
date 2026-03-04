@@ -32,6 +32,11 @@ vi.mock('../../../api/dashboard', () => ({
     getUtilizationTrend: vi.fn().mockResolvedValue({ months: [] }),
     getFreeForecast: vi.fn().mockResolvedValue({ forecast: [] }),
     getSkillsDistribution: vi.fn().mockResolvedValue({ items: [] }),
+    getSkillHeatmap: vi.fn().mockResolvedValue({ categories: [], items: [] }),
+    getHeadcountTrend: vi.fn().mockResolvedValue({ months: [] }),
+    getLocationDistribution: vi.fn().mockResolvedValue({ items: [] }),
+    getMobilizable: vi.fn().mockResolvedValue({ total: 0, valid_visa: 0, need_visa: 0 }),
+    getAlerts: vi.fn().mockResolvedValue({ items: [] }),
   },
 }))
 

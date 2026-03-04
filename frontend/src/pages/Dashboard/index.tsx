@@ -4,15 +4,17 @@
  * KPIカード・稼働率グラフ・フリー予測・スキル分布・アラートサマリーを表示する。
  * manager以上のロールのみ閲覧可能。
  */
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Alert, Button, Card, Col, List, Row, Skeleton, Typography } from 'antd'
+import { Alert, Button, Card, Col, List, Row, Segmented, Skeleton, Typography } from 'antd'
 import {
   TeamOutlined,
   CheckCircleOutlined,
   UserOutlined,
   ClockCircleOutlined,
   BellOutlined,
+  GlobalOutlined,
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
@@ -33,6 +35,8 @@ export default function DashboardPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuthStore()
+
+  const [locationTab, setLocationTab] = useState<'all' | 'JP' | 'VN'>('all')
 
   const hasAccess = user?.systemRole != null && DASHBOARD_ROLES.includes(user.systemRole)
 
@@ -85,6 +89,13 @@ export default function DashboardPage() {
     enabled: hasAccess,
   })
 
+  const { data: mobilizable, isLoading: loadingMobilizable } = useQuery({
+    queryKey: ['dashboard', 'mobilizable'],
+    queryFn: dashboardApi.getMobilizable,
+    staleTime: STALE_TIME,
+    enabled: hasAccess,
+  })
+
   if (!hasAccess) {
     return (
       <div>
@@ -100,6 +111,19 @@ export default function DashboardPage() {
   return (
     <div>
       <PageHeader title={t('dashboard.title')} />
+
+      {/* 拠点フィルタータブ */}
+      <div style={{ marginBottom: 16 }}>
+        <Segmented
+          value={locationTab}
+          onChange={v => setLocationTab(v as 'all' | 'JP' | 'VN')}
+          options={[
+            { value: 'all', label: `🌐 ${t('dashboard.locationAll')}` },
+            { value: 'JP', label: `🇯🇵 ${t('dashboard.locationJP')}` },
+            { value: 'VN', label: `🇻🇳 ${t('dashboard.locationVN')}` },
+          ]}
+        />
+      </div>
 
       {/* KPIカード行 */}
       <Row gutter={[16, 16]}>
@@ -158,6 +182,29 @@ export default function DashboardPage() {
               icon={<ClockCircleOutlined />}
               valueStyle={overview?.pending_approvals ? { color: '#faad14' } : undefined}
               onClick={() => navigate('/approvals')}
+            />
+          )}
+        </Col>
+      </Row>
+
+      {/* モバイル可能者カード（HANOI/HCMC）*/}
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24} sm={12} lg={6}>
+          {loadingMobilizable ? (
+            <Card size="small"><Skeleton active paragraph={{ rows: 2 }} /></Card>
+          ) : (
+            <KpiCard
+              title={t('dashboard.mobilizable')}
+              value={mobilizable?.total ?? 0}
+              suffix={t('common.people')}
+              extra={
+                <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                  ✅ {mobilizable?.valid_visa ?? 0} / ⚠️ {mobilizable?.need_visa ?? 0}
+                </Typography.Text>
+              }
+              icon={<GlobalOutlined />}
+              valueStyle={{ color: '#4F46E5' }}
+              onClick={() => navigate('/availability')}
             />
           )}
         </Col>

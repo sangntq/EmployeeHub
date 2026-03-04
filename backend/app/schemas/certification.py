@@ -72,3 +72,43 @@ class PendingApprovalsResponse(BaseModel):
 
 from app.schemas.skill import PendingSkillItem  # noqa: E402
 PendingApprovalsResponse.model_rebuild()
+
+
+# ── 資格概要スキーマ ──────────────────────────────────────────────────────────
+
+class CertHolderInfo(BaseModel):
+    """資格保有者情報"""
+    employee_id: str
+    name_ja: str
+    avatar_url: str | None
+    office_location: str
+    expires_at: str | None      # ISO 日付文字列
+    expiry_status: str          # SOON | VALID | NO_EXPIRY
+
+
+class CertOverviewItem(BaseModel):
+    """資格ごとの概要"""
+    master_id: str | None
+    name: str
+    issuer: str | None
+    category: str
+    has_expiry: bool
+    holder_count: int
+    expiring_soon: int
+    holders: list[CertHolderInfo]
+
+
+class CertCategoryGroup(BaseModel):
+    """カテゴリ別グループ"""
+    category: str
+    cert_count: int
+    total_holders: int
+    items: list[CertOverviewItem]
+
+
+class CertOverviewResponse(BaseModel):
+    """資格概要レスポンス"""
+    total_certs: int
+    total_holders: int
+    expiring_soon_60d: int
+    categories: list[CertCategoryGroup]

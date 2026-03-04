@@ -9,7 +9,19 @@
     "reports": "Reports",
     "alerts": "Alerts",
     "notifications": "Notifications",
-    "settings": "Settings"
+    "availability": "Availability",
+    "skills": "Skill Matrix",
+    "certifications": "Certifications",
+    "settings": "Settings",
+    "myProfile": "My Profile",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "group": {
+      "salesTools": "Sales Tools",
+      "management": "Management",
+      "personal": "Personal",
+      "system": "System"
+    }
   },
   "action": {
     "save": "Save",
@@ -36,6 +48,12 @@
     "selectAll": "Select All",
     "clearSelection": "Clear Selection",
     "uploadAvatar": "Change Photo"
+  },
+  "employee": {
+    "workloadPercent": "Workload",
+    "mobilizable": "Mobilizable",
+    "detailPanel": "Employee Detail",
+    "viewFullProfile": "Full Profile"
   },
   "common": {
     "loading": "Loading...",
@@ -295,6 +313,9 @@
     "teamSize": "Team Size",
     "responsibilities": "Responsibilities",
     "achievements": "Achievements",
+    "processPhases": "Process Phases",
+    "lessonsLearned": "Lessons Learned",
+    "lessonsLearnedPlaceholder": "Skills or knowledge gained from this project...",
     "noProjects": "No project history",
     "deleteConfirm": "Delete this project record?",
     "onGoing": "Ongoing"
@@ -406,7 +427,11 @@
     "headcountTrend": "Headcount Movement (Last {{months}} Months)",
     "headcountJoined": "Joined",
     "headcountLeft": "Left",
-    "locationDistribution": "Headcount by Office"
+    "locationDistribution": "Headcount by Office",
+    "mobilizable": "Mobilizable (VN)",
+    "locationAll": "All Offices",
+    "locationJP": "Japan",
+    "locationVN": "Vietnam"
   },
   "alertPage": {
     "title": "Alert Dashboard",
@@ -416,6 +441,39 @@
     "expiresAt": "Expires At",
     "noAlerts": "No alerts",
     "openProfile": "Open Profile"
+  },
+  "availability": {
+    "title": "Availability Calendar",
+    "free": "Free",
+    "partial": "Partial",
+    "busy": "Busy",
+    "totalFree": "Total Free",
+    "offsetLabel": "Display Period",
+    "legend": "Legend",
+    "engineer": "Engineer",
+    "noData": "No data"
+  },
+  "skillMatrix": {
+    "title": "Skill Matrix",
+    "engineers": "Engineers",
+    "uniqueSkills": "Unique Skills",
+    "freeOnly": "Free only",
+    "levelMin": "Min Level",
+    "noSkill": "—",
+    "rating": "Rating",
+    "certCount": "Certifications",
+    "certHolders": "Cert Holders",
+    "expandHint": "Click a row to view skill details"
+  },
+  "certOverview": {
+    "title": "Certifications",
+    "totalCerts": "Cert Types",
+    "totalHolders": "Holders",
+    "expiringSoon": "Expiring Soon (60d)",
+    "topCategory": "Top Category",
+    "soonBadge": "Expiring Soon",
+    "validBadge": "Valid",
+    "noExpiryBadge": "No Expiry"
   },
   "skillSheet": {
     "title": "Skill Sheet Export",
@@ -434,5 +492,13 @@
     "exportSuccess": "Download started",
     "exportError": "An error occurred during export",
     "searchEmployee": "Search employees..."
+  },
+  "notes": {
+    "tab": "Notes",
+    "newNote": "New Note",
+    "placeholder": "Enter manager notes...",
+    "addNote": "Add",
+    "empty": "No notes yet",
+    "edited": "Edited"
   }
 }

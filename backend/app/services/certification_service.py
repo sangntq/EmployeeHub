@@ -1,15 +1,23 @@
 """資格関連サービス"""
 import uuid
-from datetime import datetime, UTC
+from datetime import datetime, date, UTC, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 
 from app.models.certification import CertificationMaster, EmployeeCertification
 from app.models.employee import Employee
 from app.models.approval_history import ApprovalHistory
-from app.schemas.certification import EmployeeCertCreate, ApproveCertRequest, RejectCertRequest
+from app.schemas.certification import (
+    EmployeeCertCreate,
+    ApproveCertRequest,
+    RejectCertRequest,
+    CertHolderInfo,
+    CertOverviewItem,
+    CertCategoryGroup,
+    CertOverviewResponse,
+)
 from app.services import notification_service
 
 
@@ -179,3 +187,153 @@ async def get_pending_certs(db: AsyncSession) -> list[EmployeeCertification]:
         .order_by(EmployeeCertification.created_at.asc())
     )
     return list(result.scalars().all())
+
+
+async def get_company_cert_overview(
+    db: AsyncSession,
+    location: str | None = None,
+    category: str | None = None,
+    search: str | None = None,
+) -> CertOverviewResponse:
+    """全社資格概要を返す。
+
+    Args:
+        db: DBセッション
+        location: 社員のオフィス拠点フィルター
+        category: 資格カテゴリフィルター（CertificationMaster.category）
+        search: 資格名・社員名の部分一致検索
+    """
+    today = date.today()
+    soon_threshold = today + timedelta(days=60)
+
+    # ── APPROVED 資格を一括取得（Employee + CertificationMaster を JOIN）──────
+    query = (
+        select(EmployeeCertification, Employee)
+        .join(Employee, EmployeeCertification.employee_id == Employee.id)
+        .options(selectinload(EmployeeCertification.certification_master))
+        .where(
+            EmployeeCertification.status == "APPROVED",
+            Employee.is_active == True,
+        )
+    )
+    if location:
+        query = query.where(Employee.office_location == location)
+    if category:
+        # certification_master を持たない（カスタム）資格は category フィルターから除外
+        query = query.join(
+            CertificationMaster,
+            EmployeeCertification.certification_master_id == CertificationMaster.id,
+            isouter=True,
+        ).where(CertificationMaster.category == category)
+    if search:
+        like_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                Employee.name_ja.ilike(like_pattern),
+                Employee.name_en.ilike(like_pattern),
+                EmployeeCertification.custom_name.ilike(like_pattern),
+            )
+        )
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    # ── 資格ごとにグループ化 ─────────────────────────────────────────────────
+    # key: (master_id または None, custom_name または master.name) -> dict
+    cert_groups: dict[str, dict] = {}
+    all_holder_ids: set[str] = set()
+    total_expiring = 0
+
+    for (emp_cert, emp) in rows:
+        master = emp_cert.certification_master
+
+        # グループキーと表示名を決定
+        if master:
+            key = f"master:{master.id}"
+            cert_name = master.name
+            cert_issuer = master.issuer
+            cert_category = master.category
+            cert_has_expiry = master.has_expiry
+            cert_master_id: str | None = master.id
+        else:
+            # カスタム資格は名前でグループ化
+            key = f"custom:{emp_cert.custom_name}"
+            cert_name = emp_cert.custom_name or "不明"
+            cert_issuer = None
+            cert_category = "OTHER"
+            cert_has_expiry = emp_cert.expires_at is not None
+            cert_master_id = None
+
+        # category フィルターが指定されていてマスタなしの場合はスキップ
+        if category and not master:
+            continue
+
+        # 有効期限ステータスを判定
+        if emp_cert.expires_at is None:
+            expiry_status = "NO_EXPIRY"
+        elif emp_cert.expires_at <= soon_threshold:
+            expiry_status = "SOON"
+        else:
+            expiry_status = "VALID"
+
+        holder = CertHolderInfo(
+            employee_id=emp.id,
+            name_ja=emp.name_ja,
+            avatar_url=emp.avatar_url,
+            office_location=emp.office_location,
+            expires_at=emp_cert.expires_at.isoformat() if emp_cert.expires_at else None,
+            expiry_status=expiry_status,
+        )
+
+        if key not in cert_groups:
+            cert_groups[key] = {
+                "master_id": cert_master_id,
+                "name": cert_name,
+                "issuer": cert_issuer,
+                "category": cert_category,
+                "has_expiry": cert_has_expiry,
+                "holders": [],
+                "expiring_soon": 0,
+            }
+
+        cert_groups[key]["holders"].append(holder)
+        all_holder_ids.add(emp.id)
+        if expiry_status == "SOON":
+            cert_groups[key]["expiring_soon"] += 1
+            total_expiring += 1
+
+    # ── カテゴリ別グループを構築 ──────────────────────────────────────────────
+    category_map: dict[str, list[CertOverviewItem]] = {}
+    for group in cert_groups.values():
+        item = CertOverviewItem(
+            master_id=group["master_id"],
+            name=group["name"],
+            issuer=group["issuer"],
+            category=group["category"],
+            has_expiry=group["has_expiry"],
+            holder_count=len(group["holders"]),
+            expiring_soon=group["expiring_soon"],
+            holders=group["holders"],
+        )
+        cat = group["category"]
+        if cat not in category_map:
+            category_map[cat] = []
+        category_map[cat].append(item)
+
+    categories: list[CertCategoryGroup] = []
+    for cat_name, items in sorted(category_map.items()):
+        categories.append(
+            CertCategoryGroup(
+                category=cat_name,
+                cert_count=len(items),
+                total_holders=sum(i.holder_count for i in items),
+                items=items,
+            )
+        )
+
+    return CertOverviewResponse(
+        total_certs=len(cert_groups),
+        total_holders=len(all_holder_ids),
+        expiring_soon_60d=total_expiring,
+        categories=categories,
+    )

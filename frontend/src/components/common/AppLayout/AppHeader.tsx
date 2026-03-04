@@ -54,10 +54,8 @@ export default function AppHeader() {
         lineHeight: '56px',
       }}
     >
-      {/* ロゴ */}
-      <Typography.Text strong style={{ fontSize: 18, color: '#1677ff' }}>
-        EmployeeHub
-      </Typography.Text>
+      {/* 左側スペーサー（サイドバーにロゴあり）*/}
+      <div />
 
       {/* 右側メニュー */}
       <Space size={4}>

@@ -404,3 +404,36 @@ async def get_location_distribution(db: AsyncSession) -> LocationDistributionRes
         for row in result.all()
     ]
     return LocationDistributionResponse(items=items)
+
+
+async def get_mobilizable_summary(db: AsyncSession) -> "MobilizableSummaryResponse":
+    """モバイル可能者サマリーを返す（HANOI/HCMC の在籍社員）。"""
+    from app.schemas.dashboard import MobilizableSummaryResponse
+
+    today = date.today()
+    threshold = today + timedelta(days=30)
+    mobilizable_offices = ("HANOI", "HCMC")
+
+    # 対象社員数
+    total_result = await db.execute(
+        select(func.count(Employee.id)).where(
+            Employee.is_active == True,  # noqa: E712
+            Employee.office_location.in_(mobilizable_offices),
+        )
+    )
+    total = total_result.scalar() or 0
+
+    # 有効ビザ保有者（期限30日超）
+    valid_result = await db.execute(
+        select(func.count(VisaInfo.id))
+        .join(Employee, VisaInfo.employee_id == Employee.id)
+        .where(
+            Employee.is_active == True,  # noqa: E712
+            Employee.office_location.in_(mobilizable_offices),
+            VisaInfo.expires_at > threshold,
+        )
+    )
+    valid_visa = valid_result.scalar() or 0
+    need_visa = total - valid_visa
+
+    return MobilizableSummaryResponse(total=total, valid_visa=valid_visa, need_visa=need_visa)

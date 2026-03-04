@@ -19,6 +19,8 @@ export interface EmployeeProjectItem {
   team_size: number | null
   responsibilities: string | null
   achievements: string | null
+  process_phases: string[] | null
+  lessons_learned: string | null
   sort_order: number
   created_at: string
   updated_at: string
@@ -35,6 +37,8 @@ export interface EmployeeProjectCreateData {
   team_size?: number | null
   responsibilities?: string | null
   achievements?: string | null
+  process_phases?: string[] | null
+  lessons_learned?: string | null
 }
 
 export interface EmployeeProjectUpdateData {
@@ -48,6 +52,8 @@ export interface EmployeeProjectUpdateData {
   team_size?: number | null
   responsibilities?: string | null
   achievements?: string | null
+  process_phases?: string[] | null
+  lessons_learned?: string | null
 }
 
 export interface VisaInfo {

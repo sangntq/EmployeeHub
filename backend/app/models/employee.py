@@ -36,6 +36,7 @@ class Employee(Base):
     japanese_level: Mapped[str | None] = mapped_column(String(10), nullable=True)  # N5/N4/N3/N2/N1/NATIVE/NONE
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     left_at: Mapped[date | None] = mapped_column(Date, nullable=True)
+    self_pr: Mapped[str | None] = mapped_column(String(2000), nullable=True)  # 自己PR
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

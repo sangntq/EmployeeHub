@@ -1,10 +1,12 @@
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from app.models.employee import Employee
 from app.models.department import Department
+from app.models.work_status import Assignment
+from app.models.project import VisaInfo
 from app.schemas.employee import EmployeeCreate, EmployeeUpdate
 
 
@@ -50,6 +52,38 @@ async def list_employees(
     query = query.order_by(Employee.employee_number).offset((page - 1) * per_page).limit(per_page)
     result = await db.execute(query)
     employees = list(result.scalars().all())
+
+    # workload_percent と is_mobilizable を一括計算して付与
+    if employees:
+        emp_ids = [e.id for e in employees]
+        today = date.today()
+
+        # 稼働率（workload_percent）: アクティブなアサインの allocation_percent 合計
+        workload_rows = await db.execute(
+            select(Assignment.employee_id, func.sum(Assignment.allocation_percent).label("total"))
+            .where(
+                Assignment.employee_id.in_(emp_ids),
+                Assignment.is_active.is_(True),
+                Assignment.started_at <= today,
+                or_(Assignment.ends_at.is_(None), Assignment.ends_at >= today),
+            )
+            .group_by(Assignment.employee_id)
+        )
+        workload_map = {row.employee_id: int(row.total) for row in workload_rows}
+
+        # モバイル可能者: HANOI/HCMC かつビザ有効期限 > 今日
+        mobile_rows = await db.execute(
+            select(VisaInfo.employee_id).where(
+                VisaInfo.employee_id.in_(emp_ids),
+                VisaInfo.expires_at > today,
+            )
+        )
+        mobile_ids = {row.employee_id for row in mobile_rows}
+
+        for emp in employees:
+            emp.workload_percent = workload_map.get(emp.id)
+            emp.is_mobilizable = emp.office_location in ("HANOI", "HCMC") and emp.id in mobile_ids
+
     return employees, total
 
 

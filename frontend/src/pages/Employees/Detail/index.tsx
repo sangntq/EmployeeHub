@@ -37,6 +37,7 @@ import CertificationsTab from './CertificationsTab'
 import WorkStatusTab from './WorkStatusTab'
 import ProjectsTab from './ProjectsTab'
 import VisaTab from './VisaTab'
+import NotesTab from './NotesTab'
 import type { UploadFile } from 'antd'
 
 const { Option } = Select
@@ -266,6 +267,16 @@ export default function EmployeeDetailPage() {
           employeeId={id!}
           canView={isSelf || canApprove()}
           canEdit={isAdmin()}
+        />
+      ),
+    },
+    {
+      key: 'notes',
+      label: t('notes.tab'),
+      children: (
+        <NotesTab
+          employeeId={id!}
+          canEdit={canApprove()}
         />
       ),
     },
