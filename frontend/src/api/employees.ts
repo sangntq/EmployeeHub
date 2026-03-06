@@ -74,6 +74,9 @@ export const employeesApi = {
   update: (id: string, data: Partial<EmployeeCreateData> & { is_active?: boolean }) =>
     apiClient.put<EmployeeDetail>(`/employees/${id}`, data).then(r => r.data),
 
+  delete: (id: string) =>
+    apiClient.delete(`/employees/${id}`),
+
   uploadAvatar: (id: string, file: File) => {
     const form = new FormData()
     form.append('file', file)

@@ -4,6 +4,7 @@ import AppLayout from './components/common/AppLayout'
 import LoginPage from './pages/Login'
 import DashboardPage from './pages/Dashboard'
 import EmployeeListPage from './pages/Employees/List'
+import EmployeeCreatePage from './pages/Employees/Create'
 import EmployeeDetailPage from './pages/Employees/Detail'
 import ApprovalQueuePage from './pages/Approvals'
 import SearchPage from './pages/Search'
@@ -42,6 +43,7 @@ export default function App() {
 
           {/* Phase 1 */}
           <Route path="employees" element={<EmployeeListPage />} />
+          <Route path="employees/new" element={<EmployeeCreatePage />} />
           <Route path="employees/:id" element={<EmployeeDetailPage />} />
 
           {/* Phase 2 */}

@@ -53,7 +53,8 @@
     "workloadPercent": "Workload",
     "mobilizable": "Mobilizable",
     "detailPanel": "Employee Detail",
-    "viewFullProfile": "Full Profile"
+    "viewFullProfile": "Full Profile",
+    "deleteConfirm": "Deactivate this employee? The leaving date will be set to today."
   },
   "common": {
     "loading": "Loading...",

@@ -129,6 +129,17 @@ async def update_employee(db: AsyncSession, employee_id: str, data: EmployeeUpda
     return await get_employee(db, employee.id)
 
 
+async def deactivate_employee(db: AsyncSession, employee_id: str) -> None:
+    """社員を論理削除（無効化）する。"""
+    employee = await get_employee(db, employee_id)
+    if not employee.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="この社員はすでに無効化されています")
+    employee.is_active = False
+    if employee.left_at is None:
+        employee.left_at = date.today()
+    await db.commit()
+
+
 async def update_avatar(db: AsyncSession, employee_id: str, avatar_url: str) -> Employee:
     employee = await get_employee(db, employee_id)
     employee.avatar_url = avatar_url

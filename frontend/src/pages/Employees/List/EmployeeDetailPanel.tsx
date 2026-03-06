@@ -2,14 +2,15 @@
  * 社員スライドアウトパネル — Ant Design Drawer による右側詳細パネル
  * クリックした社員の基本情報・稼働状況・スキルを表示する。
  */
-import { Avatar, Badge, Button, Descriptions, Drawer, Skeleton, Space, Tag, Typography } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
+import { Avatar, Badge, Button, Descriptions, Drawer, Popconfirm, Skeleton, Space, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, UserOutlined } from '@ant-design/icons'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { employeesApi } from '../../../api/employees'
 import { skillsApi } from '../../../api/skills'
 import { workStatusApi } from '../../../api/workStatus'
+import { useAuth } from '../../../hooks/useAuth'
 
 interface Props {
   employeeId: string | null
@@ -44,6 +45,19 @@ const STATUS_COLORS: Record<string, string> = {
 export default function EmployeeDetailPanel({ employeeId, onClose }: Props) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
+  const queryClient = useQueryClient()
+  const [messageApi, msgCtx] = message.useMessage()
+
+  const deleteMutation = useMutation({
+    mutationFn: () => employeesApi.delete(employeeId!),
+    onSuccess: () => {
+      messageApi.success(t('common.saved'))
+      queryClient.invalidateQueries({ queryKey: ['employees'] })
+      onClose()
+    },
+    onError: () => messageApi.error(t('common.error')),
+  })
 
   const { data: employee, isLoading: loadingEmployee } = useQuery({
     queryKey: ['employee', employeeId],
@@ -72,22 +86,44 @@ export default function EmployeeDetailPanel({ employeeId, onClose }: Props) {
       width={480}
       title={t('employee.detailPanel')}
       footer={
-        <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-          <Button onClick={onClose}>{t('action.close')}</Button>
-          {employee && (
-            <Button
-              type="primary"
-              onClick={() => {
-                navigate(`/employees/${employee.id}`)
-                onClose()
-              }}
-            >
-              {t('employee.viewFullProfile')} →
-            </Button>
-          )}
+        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+          <div>
+            {isAdmin() && employee?.is_active && (
+              <Popconfirm
+                title={t('employee.deleteConfirm')}
+                onConfirm={() => deleteMutation.mutate()}
+                okText={t('action.confirm')}
+                cancelText={t('action.cancel')}
+                okButtonProps={{ danger: true }}
+              >
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  loading={deleteMutation.isPending}
+                >
+                  {t('action.delete')}
+                </Button>
+              </Popconfirm>
+            )}
+          </div>
+          <Space>
+            <Button onClick={onClose}>{t('action.close')}</Button>
+            {employee && (
+              <Button
+                type="primary"
+                onClick={() => {
+                  navigate(`/employees/${employee.id}`)
+                  onClose()
+                }}
+              >
+                {t('employee.viewFullProfile')} →
+              </Button>
+            )}
+          </Space>
         </Space>
       }
     >
+      {msgCtx}
       {loadingEmployee ? (
         <Skeleton active avatar paragraph={{ rows: 6 }} />
       ) : employee ? (
