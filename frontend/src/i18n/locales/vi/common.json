@@ -53,7 +53,8 @@
     "workloadPercent": "Tỉ lệ làm việc",
     "mobilizable": "Có thể điều phối",
     "detailPanel": "Chi tiết nhân sự",
-    "viewFullProfile": "Xem đầy đủ"
+    "viewFullProfile": "Xem đầy đủ",
+    "deleteConfirm": "Vô hiệu hóa nhân viên này? Ngày nghỉ việc sẽ được đặt là hôm nay."
   },
   "common": {
     "loading": "Đang tải...",

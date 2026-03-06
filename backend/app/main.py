@@ -39,6 +39,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# アップロード・エクスポート用ディレクトリを自動作成
+import os
+os.makedirs("uploads", exist_ok=True)
+os.makedirs("exports", exist_ok=True)
+
 # アップロードファイルを静的配信
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

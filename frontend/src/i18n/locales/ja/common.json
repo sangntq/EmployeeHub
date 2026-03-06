@@ -53,7 +53,8 @@
     "workloadPercent": "稼働率",
     "mobilizable": "出向可能",
     "detailPanel": "社員詳細",
-    "viewFullProfile": "フルプロフィール"
+    "viewFullProfile": "フルプロフィール",
+    "deleteConfirm": "この社員を無効化しますか？退社日が本日に設定されます。"
   },
   "common": {
     "loading": "読み込み中...",

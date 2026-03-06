@@ -2,10 +2,11 @@
 社員 API のユニットテスト
 
 テスト対象:
-  GET  /api/v1/employees        (一覧)
-  GET  /api/v1/employees/{id}   (詳細)
-  POST /api/v1/employees        (作成 - admin のみ)
-  PUT  /api/v1/employees/{id}   (更新 - admin のみ)
+  GET    /api/v1/employees        (一覧)
+  GET    /api/v1/employees/{id}   (詳細)
+  POST   /api/v1/employees        (作成 - admin のみ)
+  PUT    /api/v1/employees/{id}   (更新 - admin のみ)
+  DELETE /api/v1/employees/{id}   (無効化 - admin のみ)
 """
 import pytest
 from httpx import AsyncClient
@@ -155,3 +156,54 @@ class TestEmployeeUpdate:
             headers=auth_headers,
         )
         assert res.status_code == 404
+
+
+class TestEmployeeDelete:
+    async def test_delete_employee_as_admin(
+        self, client: AsyncClient, member_employee: Employee, auth_headers: dict
+    ):
+        """admin は社員を無効化（論理削除）できる。"""
+        res = await client.delete(
+            f"/api/v1/employees/{member_employee.id}",
+            headers=auth_headers,
+        )
+        assert res.status_code == 204
+
+        # 無効化されたことを確認
+        res2 = await client.get(
+            f"/api/v1/employees/{member_employee.id}",
+            headers=auth_headers,
+        )
+        assert res2.status_code == 200
+        assert res2.json()["is_active"] is False
+        assert res2.json()["left_at"] is not None
+
+    async def test_delete_employee_non_admin_forbidden(
+        self, client: AsyncClient, member_employee: Employee
+    ):
+        """admin 以外は社員を削除できない（403）。"""
+        from app.core.security import create_access_token
+        token = create_access_token(subject=member_employee.id, extra={"role": "member"})
+        headers = {"Authorization": f"Bearer {token}"}
+
+        res = await client.delete(
+            f"/api/v1/employees/{member_employee.id}",
+            headers=headers,
+        )
+        assert res.status_code == 403
+
+    async def test_delete_already_inactive_employee(
+        self, client: AsyncClient, member_employee: Employee, auth_headers: dict
+    ):
+        """すでに無効化された社員を再度削除すると 400 を返す。"""
+        # まず無効化
+        await client.delete(
+            f"/api/v1/employees/{member_employee.id}",
+            headers=auth_headers,
+        )
+        # 再度無効化を試みる
+        res = await client.delete(
+            f"/api/v1/employees/{member_employee.id}",
+            headers=auth_headers,
+        )
+        assert res.status_code == 400

@@ -85,6 +85,16 @@ async def update_employee(
     return EmployeeDetail.model_validate(employee)
 
 
+@router.delete("/{employee_id}", status_code=204)
+async def delete_employee(
+    employee_id: str,
+    db: AsyncSession = Depends(get_db),
+    current: Employee = Depends(require_role("admin")),
+):
+    """社員を無効化（論理削除）する。admin のみ実行可能。"""
+    await employee_service.deactivate_employee(db, employee_id)
+
+
 @router.post("/{employee_id}/avatar", response_model=EmployeeDetail)
 async def upload_avatar(
     employee_id: str,

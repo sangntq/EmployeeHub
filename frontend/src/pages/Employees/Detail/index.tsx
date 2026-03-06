@@ -8,6 +8,7 @@ import {
   Descriptions,
   Form,
   Input,
+  Popconfirm,
   Row,
   Select,
   Skeleton,
@@ -20,6 +21,7 @@ import {
 } from 'antd'
 import {
   ArrowLeftOutlined,
+  DeleteOutlined,
   EditOutlined,
   SaveOutlined,
   UploadOutlined,
@@ -75,6 +77,15 @@ export default function EmployeeDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employee', id] })
       messageApi.success(t('common.saved'))
+    },
+    onError: () => messageApi.error(t('common.error')),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => employeesApi.delete(id!),
+    onSuccess: () => {
+      messageApi.success(t('common.saved'))
+      navigate('/employees')
     },
     onError: () => messageApi.error(t('common.error')),
   })
@@ -307,9 +318,28 @@ export default function EmployeeDetailPage() {
                   </Button>
                 </>
               ) : (
-                <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
-                  {t('action.edit')}
-                </Button>
+                <>
+                  <Button icon={<EditOutlined />} onClick={() => setEditing(true)}>
+                    {t('action.edit')}
+                  </Button>
+                  {isAdmin() && emp.is_active && (
+                    <Popconfirm
+                      title={t('employee.deleteConfirm')}
+                      onConfirm={() => deleteMutation.mutate()}
+                      okText={t('action.confirm')}
+                      cancelText={t('action.cancel')}
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        loading={deleteMutation.isPending}
+                      >
+                        {t('action.delete')}
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </>
               )}
             </Space>
           )
