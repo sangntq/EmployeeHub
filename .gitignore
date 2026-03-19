@@ -25,7 +25,7 @@ frontend/dist/
 frontend/.vite/
 
 # Python /backend
-backend\exports
+backend/exports
 
 # IDE
 .vscode/

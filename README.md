@@ -64,6 +64,46 @@ docker compose exec backend alembic upgrade head
 
 ---
 
+## テスト用アカウント
+
+### 初期アカウント（migration で自動作成）
+
+| ロール | メールアドレス | パスワード | 備考 |
+|---|---|---|---|
+| admin | `admin@employeehub.local` | `Admin1234!` | 全権限 |
+
+### Bulk Seed アカウント（1000名分のテストデータ）
+
+大量のテストデータが必要な場合は Bulk Seed スクリプトを実行する:
+
+```bash
+docker compose exec backend python scripts/seed_bulk.py
+```
+
+実行後、以下のアカウントが使用可能になる（共通パスワード: `Test1234!`）:
+
+| ロール | メールアドレス | 人数 | 主な権限 |
+|---|---|---|---|
+| `manager` | `emp0001〜emp0020@employeehub.local` | 20名 | スキル・資格の承認、稼働状況の変更 |
+| `department_head` | `emp0021〜emp0030@employeehub.local` | 10名 | 部門全体の閲覧・承認 |
+| `sales` | `emp0031〜emp0045@employeehub.local` | 15名 | 人材検索、スキルシート出力 |
+| `director` | `emp0046〜emp0050@employeehub.local` | 5名 | 全社ダッシュボード、給与情報閲覧 |
+| `member` | `emp0051〜emp0100@employeehub.local` | 50名 | 自プロフィール編集、スキル・資格申請 |
+
+### 機能別テスト推奨アカウント
+
+| テスト内容 | 使用アカウント |
+|---|---|
+| スキル・資格の申請（送りつけ）| `emp0061@employeehub.local` / `Test1234!`（member） |
+| スキル・資格の承認・差し戻し | `emp0001@employeehub.local` / `Test1234!`（manager） |
+| 人材検索 → スキルシート出力 | `emp0031@employeehub.local` / `Test1234!`（sales） |
+| ダッシュボード・アラート閲覧 | `emp0046@employeehub.local` / `Test1234!`（director） |
+| 全管理機能 | `admin@employeehub.local` / `Admin1234!`（admin） |
+
+> **注意:** emp0051〜emp0100 以外の member（emp0101〜emp1000）はアカウントなし（ログイン不可）。
+
+---
+
 ## コンテナ管理
 
 ```bash
