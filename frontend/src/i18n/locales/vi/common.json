@@ -154,7 +154,11 @@
     "approverCommentPlaceholder": "Nhận xét phê duyệt",
     "rejectReason": "Lý do từ chối",
     "rejectReasonPlaceholder": "Nhập lý do từ chối",
-    "rejectReasonRequired": "Vui lòng nhập lý do từ chối"
+    "rejectReasonRequired": "Vui lòng nhập lý do từ chối",
+    "searchPlaceholder": "Tìm theo tên, kỹ năng hoặc chứng chỉ",
+    "sortNewest": "Mới nhất",
+    "sortOldest": "Cũ nhất",
+    "noSearchResults": "Không có yêu cầu nào khớp với tìm kiếm"
   },
   "cert": {
     "submitCert": "Gửi duyệt chứng chỉ",
@@ -382,7 +386,12 @@
     "searchSaved": "Đã lưu tiêu chí tìm kiếm",
     "saveNamePlaceholder": "Nhập tên tìm kiếm",
     "viewProfile": "Xem hồ sơ",
-    "hint": "Thiết lập bộ lọc bên trái và nhấn Tìm kiếm"
+    "hint": "Thiết lập bộ lọc bên trái và nhấn Tìm kiếm",
+    "select": "Chọn",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {{count}} người",
+    "exportToSkillSheet": "Xuất Skill Sheet",
+    "exportToSkillSheetTooltip": "Xuất skill sheet cho các ứng viên đã chọn"
   },
   "japaneseLevel": {
     "N5": "N5 (Cơ bản)",
@@ -492,7 +501,9 @@
     "noEmployees": "Vui lòng chọn ứng viên",
     "exportSuccess": "Đã bắt đầu tải xuống",
     "exportError": "Đã xảy ra lỗi khi xuất file",
-    "searchEmployee": "Tìm kiếm nhân viên..."
+    "searchEmployee": "Tìm kiếm nhân viên...",
+    "importedFromSearch": "Đã nhập {{count}} nhân viên từ kết quả tìm kiếm",
+    "backToSearch": "Quay lại tìm kiếm"
   },
   "notes": {
     "tab": "Ghi chú",

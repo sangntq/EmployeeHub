@@ -227,11 +227,19 @@ async def get_company_cert_overview(
         ).where(CertificationMaster.category == category)
     if search:
         like_pattern = f"%{search}%"
+        # category 未指定時は CertificationMaster が未 JOIN のため left outer join を追加
+        if not category:
+            query = query.join(
+                CertificationMaster,
+                EmployeeCertification.certification_master_id == CertificationMaster.id,
+                isouter=True,
+            )
         query = query.where(
             or_(
                 Employee.name_ja.ilike(like_pattern),
                 Employee.name_en.ilike(like_pattern),
                 EmployeeCertification.custom_name.ilike(like_pattern),
+                CertificationMaster.name.ilike(like_pattern),
             )
         )
 

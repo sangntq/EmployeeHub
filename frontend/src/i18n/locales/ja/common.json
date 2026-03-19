@@ -154,7 +154,11 @@
     "approverCommentPlaceholder": "承認コメント",
     "rejectReason": "差し戻し理由",
     "rejectReasonPlaceholder": "差し戻し理由を記入してください",
-    "rejectReasonRequired": "差し戻し理由を入力してください"
+    "rejectReasonRequired": "差し戻し理由を入力してください",
+    "searchPlaceholder": "氏名・スキル・資格で検索",
+    "sortNewest": "新しい順",
+    "sortOldest": "古い順",
+    "noSearchResults": "検索条件に一致する申請はありません"
   },
   "cert": {
     "submitCert": "資格を申請",
@@ -382,7 +386,12 @@
     "searchSaved": "検索条件を保存しました",
     "saveNamePlaceholder": "検索条件の名前を入力",
     "viewProfile": "プロフィール",
-    "hint": "左のフィルターで条件を設定して検索してください"
+    "hint": "左のフィルターで条件を設定して検索してください",
+    "select": "選択",
+    "selectAll": "すべて選択",
+    "selectedCount": "{{count}} 名選択中",
+    "exportToSkillSheet": "スキルシート出力",
+    "exportToSkillSheetTooltip": "選択した候補者のスキルシートを出力する"
   },
   "japaneseLevel": {
     "N5": "N5（入門）",
@@ -492,7 +501,9 @@
     "noEmployees": "候補者を選択してください",
     "exportSuccess": "ダウンロードを開始しました",
     "exportError": "出力中にエラーが発生しました",
-    "searchEmployee": "社員を検索..."
+    "searchEmployee": "社員を検索...",
+    "importedFromSearch": "人材検索から {{count}} 名がインポートされました",
+    "backToSearch": "検索に戻る"
   },
   "notes": {
     "tab": "メモ",

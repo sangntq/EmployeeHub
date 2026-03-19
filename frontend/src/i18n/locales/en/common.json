@@ -154,7 +154,11 @@
     "approverCommentPlaceholder": "Approval comment",
     "rejectReason": "Rejection Reason",
     "rejectReasonPlaceholder": "Enter rejection reason",
-    "rejectReasonRequired": "Please enter rejection reason"
+    "rejectReasonRequired": "Please enter rejection reason",
+    "searchPlaceholder": "Search by name, skill or cert",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "noSearchResults": "No submissions match your search"
   },
   "cert": {
     "submitCert": "Submit Certification",
@@ -382,7 +386,12 @@
     "searchSaved": "Search criteria saved",
     "saveNamePlaceholder": "Enter search name",
     "viewProfile": "Profile",
-    "hint": "Set filters on the left and click Search"
+    "hint": "Set filters on the left and click Search",
+    "select": "Select",
+    "selectAll": "Select all",
+    "selectedCount": "{{count}} selected",
+    "exportToSkillSheet": "Export Skill Sheet",
+    "exportToSkillSheetTooltip": "Export skill sheets for selected candidates"
   },
   "japaneseLevel": {
     "N5": "N5 (Beginner)",
@@ -492,7 +501,9 @@
     "noEmployees": "Please select candidates",
     "exportSuccess": "Download started",
     "exportError": "An error occurred during export",
-    "searchEmployee": "Search employees..."
+    "searchEmployee": "Search employees...",
+    "importedFromSearch": "{{count}} employees imported from search",
+    "backToSearch": "Back to Search"
   },
   "notes": {
     "tab": "Notes",

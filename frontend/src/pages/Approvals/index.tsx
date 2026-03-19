@@ -1,23 +1,23 @@
 import {
   Button,
   Card,
-  Col,
   Form,
   Input,
   Modal,
   Rate,
-  Row,
+  Select,
   Space,
   Table,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
   message,
 } from 'antd'
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
+import { CheckOutlined, CloseOutlined, SearchOutlined, SortAscendingOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { certificationsApi } from '../../api/certifications'
 import type { PendingCertItem } from '../../api/certifications'
 import { skillsApi } from '../../api/skills'
@@ -28,6 +28,9 @@ export default function ApprovalQueuePage() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [messageApi, ctx] = message.useMessage()
+
+  const [searchText, setSearchText] = useState('')
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
   const [approveSkillOpen, setApproveSkillOpen] = useState<PendingSkillItem | null>(null)
   const [rejectSkillOpen, setRejectSkillOpen] = useState<PendingSkillItem | null>(null)
@@ -97,8 +100,38 @@ export default function ApprovalQueuePage() {
 
   const levelLabel = (level: number) => t(`skillLevel.level${level}`)
 
-  const pendingSkills = data?.skills ?? []
-  const pendingCerts = data?.certifications ?? []
+  const rawSkills = data?.skills ?? []
+  const rawCerts = data?.certifications ?? []
+
+  const pendingSkills = useMemo(() => {
+    const q = searchText.toLowerCase()
+    const filtered = q
+      ? rawSkills.filter(
+          r =>
+            r.employee_name_ja?.toLowerCase().includes(q) ||
+            r.skill_name?.toLowerCase().includes(q),
+        )
+      : rawSkills
+    return [...filtered].sort((a, b) => {
+      const diff = new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
+      return sortOrder === 'desc' ? -diff : diff
+    })
+  }, [rawSkills, searchText, sortOrder])
+
+  const pendingCerts = useMemo(() => {
+    const q = searchText.toLowerCase()
+    const filtered = q
+      ? rawCerts.filter(
+          r =>
+            r.employee_name_ja?.toLowerCase().includes(q) ||
+            r.cert_name?.toLowerCase().includes(q),
+        )
+      : rawCerts
+    return [...filtered].sort((a, b) => {
+      const diff = new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
+      return sortOrder === 'desc' ? -diff : diff
+    })
+  }, [rawCerts, searchText, sortOrder])
 
   const skillColumns = [
     {
@@ -235,8 +268,6 @@ export default function ApprovalQueuePage() {
     },
   ]
 
-  const totalPending = pendingSkills.length + pendingCerts.length
-
   return (
     <div>
       {ctx}
@@ -248,61 +279,89 @@ export default function ApprovalQueuePage() {
         }
       />
 
-      {totalPending === 0 && !isLoading && (
-        <Card style={{ textAlign: 'center', padding: 40 }}>
-          <Typography.Text type="secondary">{t('approval.noPending')}</Typography.Text>
-        </Card>
-      )}
-
-      <Row gutter={[0, 16]}>
-        {/* スキル承認待ち */}
-        <Col span={24}>
-          <Card
-            title={
+      <Card>
+        <Tabs
+          defaultActiveKey="skills"
+          tabBarExtraContent={
+            <Space wrap>
+              <Input
+                prefix={<SearchOutlined />}
+                placeholder={t('approval.searchPlaceholder')}
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                allowClear
+                style={{ width: 240 }}
+              />
               <Space>
-                {t('approval.skillSubmission')}
-                {pendingSkills.length > 0 && (
-                  <Tag color="orange">{t('approval.pendingCount', { count: pendingSkills.length })}</Tag>
-                )}
+                <SortAscendingOutlined style={{ color: '#8c8c8c' }} />
+                <Select
+                  value={sortOrder}
+                  onChange={setSortOrder}
+                  style={{ width: 130 }}
+                  options={[
+                    { value: 'desc', label: t('approval.sortNewest') },
+                    { value: 'asc', label: t('approval.sortOldest') },
+                  ]}
+                />
               </Space>
-            }
-          >
-            <Table
-              dataSource={pendingSkills}
-              columns={skillColumns}
-              rowKey="id"
-              loading={isLoading}
-              pagination={false}
-              size="small"
-              locale={{ emptyText: t('approval.noSkillsPending') }}
-            />
-          </Card>
-        </Col>
-
-        {/* 資格承認待ち */}
-        <Col span={24}>
-          <Card
-            title={
-              <Space>
-                {t('approval.certSubmission')}
-                {pendingCerts.length > 0 && (
-                  <Tag color="orange">{t('approval.pendingCount', { count: pendingCerts.length })}</Tag>
-                )}
-              </Space>
-            }
-          >
-            <Table
-              dataSource={pendingCerts}
-              columns={certColumns}
-              rowKey="id"
-              loading={isLoading}
-              pagination={false}
-              size="small"
-              locale={{ emptyText: t('approval.noCertsPending') }}
-            />
-          </Card>
-        </Col>
-      </Row>
+            </Space>
+          }
+          items={[
+            {
+              key: 'skills',
+              label: (
+                <Space>
+                  {t('approval.skillSubmission')}
+                  {rawSkills.length > 0 && (
+                    <Tag color="orange">{t('approval.pendingCount', { count: rawSkills.length })}</Tag>
+                  )}
+                </Space>
+              ),
+              children: (
+                <Table
+                  dataSource={pendingSkills}
+                  columns={skillColumns}
+                  rowKey="id"
+                  loading={isLoading}
+                  pagination={{ pageSize: 20, showSizeChanger: false }}
+                  size="small"
+                  locale={{
+                    emptyText: searchText
+                      ? t('approval.noSearchResults')
+                      : t('approval.noSkillsPending'),
+                  }}
+                />
+              ),
+            },
+            {
+              key: 'certs',
+              label: (
+                <Space>
+                  {t('approval.certSubmission')}
+                  {rawCerts.length > 0 && (
+                    <Tag color="orange">{t('approval.pendingCount', { count: rawCerts.length })}</Tag>
+                  )}
+                </Space>
+              ),
+              children: (
+                <Table
+                  dataSource={pendingCerts}
+                  columns={certColumns}
+                  rowKey="id"
+                  loading={isLoading}
+                  pagination={{ pageSize: 20, showSizeChanger: false }}
+                  size="small"
+                  locale={{
+                    emptyText: searchText
+                      ? t('approval.noSearchResults')
+                      : t('approval.noCertsPending'),
+                  }}
+                />
+              ),
+            },
+          ]}
+        />
+      </Card>
 
       {/* スキル承認モーダル */}
       <Modal

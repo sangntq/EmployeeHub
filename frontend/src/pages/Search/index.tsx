@@ -4,10 +4,11 @@
  * 左パネル: フィルターフォーム（スキル条件・稼働状況・拠点・勤務スタイル・日本語レベル・フリー予定日）
  * 右パネル: 検索結果カード一覧（マッチ度スコア付き）
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 import {
   Row,
   Col,
@@ -30,6 +31,7 @@ import {
   Modal,
   Input,
   message,
+  Tooltip,
 } from 'antd'
 import {
   SearchOutlined,
@@ -39,6 +41,7 @@ import {
   DeleteOutlined,
   BookOutlined,
   RobotOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons'
 import AISearchTab from './AISearchTab'
 import type { Dayjs } from 'dayjs'
@@ -93,6 +96,29 @@ export default function SearchPage() {
   } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
 
+  // スキルシート画面から戻った際に状態を復元する
+  const SEARCH_STATE_KEY = 'employeehub_search_state'
+  useEffect(() => {
+    const saved = sessionStorage.getItem(SEARCH_STATE_KEY)
+    if (!saved) return
+    try {
+      const s = JSON.parse(saved) as Record<string, unknown>
+      if (Array.isArray(s.workStatuses))   setWorkStatuses(s.workStatuses as string[])
+      if (Array.isArray(s.officeLocations)) setOfficeLocations(s.officeLocations as string[])
+      if (s.workStyle !== undefined)       setWorkStyle(s.workStyle as string | undefined)
+      if (s.japaneseLevel !== undefined)   setJapaneseLevel(s.japaneseLevel as string | undefined)
+      if (s.freeFromBefore)               setFreeFromBefore(dayjs(s.freeFromBefore as string))
+      if (Array.isArray(s.skillCriteria)) setSkillCriteria(s.skillCriteria as SkillCriteriaInput[])
+      if (s.searchResults)                setSearchResults(s.searchResults as { items: SearchResultItem[]; total: number })
+      if (typeof s.currentPage === 'number') setCurrentPage(s.currentPage)
+    } catch { /* ignore */ }
+  // マウント時のみ実行
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 選択済み社員ID
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
   // 保存モーダル
   const [saveModalOpen, setSaveModalOpen] = useState(false)
   const [saveName, setSaveName] = useState('')
@@ -110,6 +136,7 @@ export default function SearchPage() {
     onSuccess: data => {
       setSearchResults({ items: data.items, total: data.total })
       setCurrentPage(data.page)
+      setSelectedIds(new Set())  // 検索のたびに選択リセット
     },
     onError: () => {
       void message.error(t('common.error'))
@@ -155,7 +182,21 @@ export default function SearchPage() {
     searchMutation.mutate({ ...criteria, page: 1, per_page: 20 })
   }
 
+  const saveStateToSession = () => {
+    sessionStorage.setItem(SEARCH_STATE_KEY, JSON.stringify({
+      workStatuses,
+      officeLocations,
+      workStyle,
+      japaneseLevel,
+      freeFromBefore: freeFromBefore?.toISOString() ?? null,
+      skillCriteria,
+      searchResults,
+      currentPage,
+    }))
+  }
+
   const handleReset = () => {
+    sessionStorage.removeItem(SEARCH_STATE_KEY)
     setWorkStatuses([])
     setOfficeLocations([])
     setWorkStyle(undefined)
@@ -164,6 +205,52 @@ export default function SearchPage() {
     setSkillCriteria([])
     setSearchResults(null)
     setCurrentPage(1)
+    setSelectedIds(new Set())
+  }
+
+  // 選択操作
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const currentItems = searchResults?.items ?? []
+  const allCurrentSelected =
+    currentItems.length > 0 && currentItems.every(item => selectedIds.has(item.employee.id))
+  const someCurrentSelected =
+    currentItems.some(item => selectedIds.has(item.employee.id)) && !allCurrentSelected
+
+  const toggleSelectAll = () => {
+    if (allCurrentSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        currentItems.forEach(item => next.delete(item.employee.id))
+        return next
+      })
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev)
+        currentItems.forEach(item => next.add(item.employee.id))
+        return next
+      })
+    }
+  }
+
+  const handleExportSkillSheet = () => {
+    saveStateToSession()
+    // 選択済み社員のスナップショットも一緒に渡す（SkillSheet側でper_page上限に依存しないため）
+    const snapshots = currentItems
+      .filter(item => selectedIds.has(item.employee.id))
+      .map(item => ({
+        id: item.employee.id,
+        name_ja: item.employee.name_ja,
+        employee_number: item.employee.employee_number,
+        avatar_url: item.employee.avatar_url ?? null,
+      }))
+    navigate('/skillsheet', { state: { employee_ids: [...selectedIds], imported_employees: snapshots } })
   }
 
   const handleSaveSearch = () => {
@@ -454,10 +541,47 @@ export default function SearchPage() {
           {/* 結果表示 */}
           {!searchMutation.isPending && searchResults && (
             <>
-              <div style={{ marginBottom: 12 }}>
-                <Text type="secondary" style={{ fontSize: 13 }}>
-                  {t('search.resultCount', { count: searchResults.total })}
-                </Text>
+              {/* 結果件数 + 選択ツールバー */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 12,
+                  minHeight: 32,
+                }}
+              >
+                <Space>
+                  <Text type="secondary" style={{ fontSize: 13 }}>
+                    {t('search.resultCount', { count: searchResults.total })}
+                  </Text>
+                  {searchResults.items.length > 0 && (
+                    <Checkbox
+                      indeterminate={someCurrentSelected}
+                      checked={allCurrentSelected}
+                      onChange={toggleSelectAll}
+                    >
+                      <Text style={{ fontSize: 12 }}>{t('search.selectAll')}</Text>
+                    </Checkbox>
+                  )}
+                </Space>
+                {selectedIds.size > 0 && (
+                  <Space>
+                    <Text style={{ fontSize: 12, color: '#1677ff' }}>
+                      {t('search.selectedCount', { count: selectedIds.size })}
+                    </Text>
+                    <Tooltip title={t('search.exportToSkillSheetTooltip')}>
+                      <Button
+                        type="primary"
+                        icon={<FileTextOutlined />}
+                        size="small"
+                        onClick={handleExportSkillSheet}
+                      >
+                        {t('search.exportToSkillSheet')}
+                      </Button>
+                    </Tooltip>
+                  </Space>
+                )}
               </div>
 
               {searchResults.items.length === 0 ? (
@@ -468,6 +592,8 @@ export default function SearchPage() {
                     <Col span={12} key={item.employee.id}>
                       <ResultCard
                         item={item}
+                        selected={selectedIds.has(item.employee.id)}
+                        onToggleSelect={() => toggleSelect(item.employee.id)}
                         onView={() => navigate(`/employees/${item.employee.id}`)}
                       />
                     </Col>
@@ -520,10 +646,12 @@ export default function SearchPage() {
 // ── 結果カードコンポーネント ──────────────────────────────────────────────────────
 interface ResultCardProps {
   item: SearchResultItem
+  selected: boolean
+  onToggleSelect: () => void
   onView: () => void
 }
 
-function ResultCard({ item, onView }: ResultCardProps) {
+function ResultCard({ item, selected, onToggleSelect, onView }: ResultCardProps) {
   const { t } = useTranslation()
   const { employee, work_status, match_score, matched_skills, missing_skills } = item
 
@@ -541,9 +669,29 @@ function ResultCard({ item, onView }: ResultCardProps) {
     <Card
       size="small"
       hoverable
-      style={{ height: '100%' }}
+      onClick={onToggleSelect}
+      style={{
+        height: '100%',
+        cursor: 'pointer',
+        outline: selected ? '2px solid #1677ff' : '2px solid transparent',
+        outlineOffset: -1,
+        transition: 'outline-color 0.15s',
+      }}
       actions={[
-        <Button type="link" onClick={onView} key="view" style={{ fontSize: 13 }}>
+        <Checkbox
+          key="select"
+          checked={selected}
+          onChange={onToggleSelect}
+          onClick={e => e.stopPropagation()}
+        >
+          <span style={{ fontSize: 12 }}>{t('search.select')}</span>
+        </Checkbox>,
+        <Button
+          type="link"
+          key="view"
+          style={{ fontSize: 13 }}
+          onClick={e => { e.stopPropagation(); onView() }}
+        >
           {t('search.viewProfile')}
         </Button>,
       ]}

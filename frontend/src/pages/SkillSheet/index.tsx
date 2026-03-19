@@ -18,10 +18,12 @@ import {
   Avatar,
   Typography,
   notification,
+  Alert,
 } from 'antd'
-import { DeleteOutlined, DownloadOutlined, UserOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, DeleteOutlined, DownloadOutlined, UserOutlined } from '@ant-design/icons'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/common/PageHeader'
 import { employeesApi, type EmployeeListItem } from '../../api/employees'
 import { skillsheetApi } from '../../api/skillsheet'
@@ -30,9 +32,21 @@ const { Text } = Typography
 
 export default function SkillSheetPage() {
   const { t } = useTranslation()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // 検索画面から渡されたデータ
+  const locationState = location.state as {
+    employee_ids?: string[]
+    imported_employees?: { id: string; name_ja: string; employee_number: string; avatar_url: string | null }[]
+  } | null
+  const importedIds: string[] = locationState?.employee_ids ?? []
+  const importedSnapshotMap = Object.fromEntries(
+    (locationState?.imported_employees ?? []).map(e => [e.id, e])
+  )
 
   // ── 状態 ──────────────────────────────────────────────────────────────────
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [selectedIds, setSelectedIds] = useState<string[]>(importedIds)
   const [format, setFormat] = useState<'xlsx' | 'pdf'>('xlsx')
   const [outputStyle, setOutputStyle] = useState<'combined' | 'zip'>('combined')
   const [filenamePrefix, setFilenamePrefix] = useState('skillsheet')
@@ -45,7 +59,11 @@ export default function SkillSheetPage() {
   })
 
   const employees: EmployeeListItem[] = employeesData?.items ?? []
-  const selectedEmployees = employees.filter(e => selectedIds.includes(e.id))
+
+  // 選択済み社員: フルリストになければ import スナップショットにフォールバック
+  const selectedEmployees = selectedIds
+    .map(id => employees.find(e => e.id === id) ?? (importedSnapshotMap[id] as EmployeeListItem | undefined))
+    .filter((e): e is EmployeeListItem => !!e)
 
   // ── エクスポート実行 ───────────────────────────────────────────────────────
   const mutation = useMutation({
@@ -84,7 +102,24 @@ export default function SkillSheetPage() {
       <PageHeader
         title={t('skillSheet.title')}
         breadcrumbs={[{ title: t('skillSheet.title') }]}
+        extra={
+          importedIds.length > 0 && (
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/search')}>
+              {t('skillSheet.backToSearch')}
+            </Button>
+          )
+        }
       />
+
+      {importedIds.length > 0 && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={t('skillSheet.importedFromSearch', { count: importedIds.length })}
+          closable
+        />
+      )}
 
       <Row gutter={16}>
         {/* 左カラム: 候補者選択 */}
