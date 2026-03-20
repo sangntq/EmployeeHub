@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.routers import auth, employees, departments, skills, certifications, approvals, work_statuses, projects, search, dashboard, skillsheet, notifications, availability, skillmatrix
+from app.routers import auth, employees, departments, skills, certifications, approvals, work_statuses, projects, search, dashboard, skillsheet, notifications, availability, skillmatrix, certmatrix
 from app.services.scheduler_service import start_scheduler, stop_scheduler
 
 
@@ -79,6 +79,7 @@ app.include_router(notifications.router, prefix="/api/v1", tags=["notifications"
 # 追加ルーター（稼働可否 / スキルマトリクス）
 app.include_router(availability.router, prefix="/api/v1", tags=["availability"])
 app.include_router(skillmatrix.router, prefix="/api/v1", tags=["skillmatrix"])
+app.include_router(certmatrix.router, prefix="/api/v1", tags=["certmatrix"])
 
 
 @app.get("/health", tags=["system"])

@@ -57,6 +57,7 @@ export default function Sidebar() {
         { key: 'search',       icon: <EmojiIcon e="🤖" />, label: t('nav.search') },
         { key: 'availability', icon: <EmojiIcon e="📅" />, label: t('nav.availability') },
         { key: 'skills',       icon: <EmojiIcon e="📈" />, label: t('nav.skills') },
+        { key: 'cert-matrix', icon: <EmojiIcon e="🏅" />, label: t('nav.certMatrix') },
         { key: 'skillsheet',   icon: <EmojiIcon e="📄" />, label: t('nav.skillSheet') },
       ],
     })

@@ -127,5 +127,12 @@ async def test_skillmatrix_empty_when_no_approved_skills(
     resp = await client.get("/api/v1/skills/matrix", headers=manager_headers)
     assert resp.status_code == 200
     data = resp.json()
-    # APPROVED スキルが誰にも付与されていないので categories は空
-    assert data["categories"] == []
+    # 全スキルマスタが返却される（APPROVED スキルがなくてもカテゴリ・スキル列は表示）
+    assert len(data["categories"]) >= 1
+    # "バックエンド" カテゴリに "Python" スキルが含まれる
+    backend_cat = [c for c in data["categories"] if c["name_ja"] == "バックエンド"]
+    assert len(backend_cat) == 1
+    assert any(s["name"] == "Python" for s in backend_cat[0]["skills"])
+    # ただしどの社員にも APPROVED スキルはない → engineers の skills は全て空
+    for eng in data["engineers"]:
+        assert eng["skills"] == {}

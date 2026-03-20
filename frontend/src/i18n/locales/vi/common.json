@@ -12,6 +12,7 @@
     "availability": "Lịch trống",
     "skills": "Skill Matrix",
     "certifications": "Chứng chỉ",
+    "certMatrix": "Ma trận chứng chỉ",
     "settings": "Cài đặt",
     "myProfile": "Hồ sơ của tôi",
     "collapseSidebar": "Thu gọn menu",
@@ -465,15 +466,30 @@
   },
   "skillMatrix": {
     "title": "Ma trận kỹ năng",
+    "engineer": "Kỹ sư",
     "engineers": "Số kỹ sư",
     "uniqueSkills": "Số kỹ năng",
     "freeOnly": "Chỉ rảnh",
     "levelMin": "Cấp độ tối thiểu",
+    "category": "Danh mục kỹ năng",
     "noSkill": "—",
     "rating": "Xếp hạng",
     "certCount": "Số chứng chỉ",
     "certHolders": "Người có chứng chỉ",
-    "expandHint": "Nhấn vào hàng để xem chi tiết kỹ năng"
+    "expandHint": "Nhấn vào hàng để xem chi tiết kỹ năng",
+    "mobilizable": "Có thể điều động",
+    "skillFilter": "Lọc kỹ năng"
+  },
+  "certMatrix": {
+    "title": "Ma trận chứng chỉ",
+    "engineer": "Kỹ sư",
+    "category": "Danh mục chứng chỉ",
+    "certFilter": "Lọc chứng chỉ",
+    "obtained": "Ngày đạt",
+    "expires": "Hạn hiệu lực",
+    "expiry_VALID": "Còn hiệu lực",
+    "expiry_SOON": "Sắp hết hạn",
+    "expiry_NO_EXPIRY": "Vô thời hạn"
   },
   "certOverview": {
     "title": "Quản lý chứng chỉ",

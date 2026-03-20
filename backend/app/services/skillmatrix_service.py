@@ -69,34 +69,50 @@ async def get_skill_matrix(
 
     employee_ids = [e.id for e in employees]
 
+    # ── 全スキルマスタを取得（カテゴリ含む） ──────────────────────────────────
+    all_skills_query = (
+        select(Skill, SkillCategory)
+        .join(SkillCategory, Skill.category_id == SkillCategory.id)
+        .where(Skill.is_active == True)
+    )
+    if category_id:
+        all_skills_query = all_skills_query.where(Skill.category_id == category_id)
+
+    all_skills_result = await db.execute(all_skills_query)
+    all_skills_rows = all_skills_result.all()
+
+    # カテゴリ・スキルのマスタマップを構築
+    cat_map: dict[str, SkillCategory] = {}
+    skill_map: dict[str, Skill] = {}
+    for (skill, category) in all_skills_rows:
+        cat_map[category.id] = category
+        skill_map[skill.id] = skill
+
     # ── APPROVED スキルを一括取得 ───────────────────────────────────────────
     skill_query = (
-        select(EmployeeSkill, Skill, SkillCategory)
-        .join(Skill, EmployeeSkill.skill_id == Skill.id)
-        .join(SkillCategory, Skill.category_id == SkillCategory.id)
+        select(EmployeeSkill)
         .where(
             EmployeeSkill.employee_id.in_(employee_ids),
             EmployeeSkill.status == "APPROVED",
         )
     )
     if category_id:
-        skill_query = skill_query.where(Skill.category_id == category_id)
+        skill_query = skill_query.where(
+            EmployeeSkill.skill_id.in_(list(skill_map.keys()))
+        )
 
     skill_result = await db.execute(skill_query)
-    skill_rows = skill_result.all()
+    emp_skill_rows = skill_result.scalars().all()
 
     # ── データ集計 ──────────────────────────────────────────────────────────
     # emp_id -> {skill_id: EngineerSkillEntry}
     emp_skill_map: dict[str, dict[str, EngineerSkillEntry]] = {eid: {} for eid in employee_ids}
-    # category id -> SkillCategory, skill id -> Skill
-    cat_map: dict[str, SkillCategory] = {}
-    skill_map: dict[str, Skill] = {}
 
-    for (emp_skill, skill, category) in skill_rows:
-        cat_map[category.id] = category
-        skill_map[skill.id] = skill
-        emp_skill_map[emp_skill.employee_id][skill.id] = EngineerSkillEntry(
-            skill_id=skill.id,
+    for emp_skill in emp_skill_rows:
+        if emp_skill.skill_id not in skill_map:
+            continue
+        emp_skill_map[emp_skill.employee_id][emp_skill.skill_id] = EngineerSkillEntry(
+            skill_id=emp_skill.skill_id,
             level=emp_skill.approved_level,
             years=float(emp_skill.experience_years) if emp_skill.experience_years is not None else None,
         )
@@ -113,13 +129,13 @@ async def get_skill_matrix(
                 filtered_employees.append(emp)
         employees = filtered_employees
 
-    # ── カテゴリ・スキル構造を構築 ─────────────────────────────────────────
+    # ── カテゴリ・スキル構造を構築（全マスタを含む） ────────────────────────
     # sort_order 昇順でカテゴリをソート
     sorted_cats = sorted(cat_map.values(), key=lambda c: (c.sort_order, c.name_ja))
 
     categories: list[SkillMatrixCategory] = []
     for cat in sorted_cats:
-        # このカテゴリのスキル一覧（スキル名アルファベット順）
+        # このカテゴリの全スキル一覧（スキル名アルファベット順）
         cat_skills = sorted(
             [s for s in skill_map.values() if s.category_id == cat.id],
             key=lambda s: (s.name_ja or s.name).lower(),

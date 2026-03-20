@@ -12,6 +12,7 @@
     "availability": "空きカレンダー",
     "skills": "スキルマトリクス",
     "certifications": "資格管理",
+    "certMatrix": "資格マトリクス",
     "settings": "設定",
     "myProfile": "マイプロフィール",
     "collapseSidebar": "サイドバーを折りたたむ",
@@ -465,15 +466,30 @@
   },
   "skillMatrix": {
     "title": "スキルマトリクス",
+    "engineer": "kỹ sư",
     "engineers": "エンジニア数",
     "uniqueSkills": "スキル数",
     "freeOnly": "空きのみ",
     "levelMin": "最低レベル",
+    "category": "スキルカテゴリ",
     "noSkill": "—",
     "rating": "評価",
     "certCount": "資格数",
     "certHolders": "資格保有者",
-    "expandHint": "行をクリックでスキル詳細を表示"
+    "expandHint": "行をクリックでスキル詳細を表示",
+    "mobilizable": "派遣可能",
+    "skillFilter": "スキル絞り込み"
+  },
+  "certMatrix": {
+    "title": "資格マトリクス",
+    "engineer": "kỹ sư",
+    "category": "資格カテゴリ",
+    "certFilter": "資格絞り込み",
+    "obtained": "取得日",
+    "expires": "有効期限",
+    "expiry_VALID": "有効",
+    "expiry_SOON": "期限間近",
+    "expiry_NO_EXPIRY": "無期限"
   },
   "certOverview": {
     "title": "資格管理",

@@ -12,6 +12,7 @@
     "availability": "Availability",
     "skills": "Skill Matrix",
     "certifications": "Certifications",
+    "certMatrix": "Cert Matrix",
     "settings": "Settings",
     "myProfile": "My Profile",
     "collapseSidebar": "Collapse sidebar",
@@ -465,15 +466,30 @@
   },
   "skillMatrix": {
     "title": "Skill Matrix",
+    "engineer": "Engineer",
     "engineers": "Engineers",
     "uniqueSkills": "Unique Skills",
     "freeOnly": "Free only",
     "levelMin": "Min Level",
+    "category": "Skill Category",
     "noSkill": "—",
     "rating": "Rating",
     "certCount": "Certifications",
     "certHolders": "Cert Holders",
-    "expandHint": "Click a row to view skill details"
+    "expandHint": "Click a row to view skill details",
+    "mobilizable": "Mobilizable",
+    "skillFilter": "Filter skills"
+  },
+  "certMatrix": {
+    "title": "Certificate Matrix",
+    "engineer": "Engineer",
+    "category": "Cert Category",
+    "certFilter": "Filter certs",
+    "obtained": "Obtained",
+    "expires": "Expires",
+    "expiry_VALID": "Valid",
+    "expiry_SOON": "Expiring soon",
+    "expiry_NO_EXPIRY": "No expiry"
   },
   "certOverview": {
     "title": "Certifications",

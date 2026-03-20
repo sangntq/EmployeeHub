@@ -15,6 +15,7 @@ import NotFoundPage from './pages/NotFound'
 import AvailabilityPage from './pages/Availability'
 import SkillMatrixPage from './pages/SkillMatrix'
 import CertificationsPage from './pages/Certifications'
+import CertMatrixPage from './pages/CertMatrix'
 
 /** 未認証の場合 /login にリダイレクトするラッパー */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="skills" element={<SkillMatrixPage />} />
           <Route path="certifications" element={<CertificationsPage />} />
+          <Route path="cert-matrix" element={<CertMatrixPage />} />
           {/* <Route path="reports" element={<ReportsPage />} /> */}
           {/* <Route path="settings" element={<SettingsPage />} /> */}
 

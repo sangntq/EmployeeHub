@@ -1,0 +1,263 @@
+/* 資格マトリクス — グリッドテーブルスタイル */
+
+.cert-matrix-scroll {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* ── テーブル全体 ────────────────────────────────── */
+.cert-matrix-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-size: 13px;
+}
+
+/* ── カテゴリヘッダー（1行目） ────────────────────── */
+.cert-matrix-cat-row th {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+}
+
+.cert-matrix-cat-header {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.cert-matrix-cat-header:last-child {
+  border-right: none;
+}
+
+/* ── 個別資格ヘッダー（2行目） ──────────────────── */
+.cert-matrix-cert-row th {
+  position: sticky;
+  top: 33px;
+  z-index: 11;
+}
+
+.cert-matrix-cert-header {
+  padding: 6px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 80px;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: #fff;
+}
+
+.cert-matrix-cert-header span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── エンジニア列ヘッダー（固定） ─────────────────── */
+.cert-matrix-engineer-header {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 20;
+  min-width: 260px;
+  max-width: 280px;
+  padding: 8px 16px;
+  background: #1E293B;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  border-right: 2px solid #334155;
+}
+
+/* ── エンジニアセル（固定列） ─────────────────────── */
+.cert-matrix-engineer-cell {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  min-width: 260px;
+  max-width: 280px;
+  padding: 8px 12px;
+  background: #fff;
+  border-right: 2px solid #E5E7EB;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.cert-matrix-body-row:hover .cert-matrix-engineer-cell {
+  background: #F8FAFC;
+}
+
+.cert-matrix-engineer-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cert-matrix-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.cert-matrix-engineer-detail {
+  min-width: 0;
+}
+
+.cert-matrix-engineer-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.cert-matrix-engineer-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.cert-matrix-level-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.cert-matrix-office-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.cert-matrix-office-flag {
+  font-weight: 800;
+  font-size: 10px;
+}
+
+.cert-matrix-mobilizable {
+  font-size: 13px;
+  cursor: help;
+}
+
+/* ── 資格セル ──────────────────────────────────────── */
+.cert-matrix-cell {
+  padding: 4px 3px;
+  text-align: center;
+  border-bottom: 1px solid #F3F4F6;
+  border-right: 1px solid #F9FAFB;
+  vertical-align: middle;
+  min-width: 80px;
+}
+
+.cert-matrix-body-row:hover .cert-matrix-cell {
+  background: #FAFBFC;
+}
+
+.cert-matrix-cell-empty .cert-matrix-dash {
+  color: #D1D5DB;
+  font-size: 16px;
+  font-weight: 300;
+  user-select: none;
+}
+
+/* ── 資格バッジ ────────────────────────────────────── */
+.cert-matrix-cert-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: default;
+  transition: transform 0.1s;
+}
+
+.cert-matrix-cert-badge:hover {
+  transform: scale(1.08);
+}
+
+.cert-matrix-cert-icon {
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.cert-matrix-cert-year {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+/* ── ボディ行ホバー ───────────────────────────────── */
+.cert-matrix-body-row {
+  transition: background 0.15s;
+}
+
+.cert-matrix-body-row:hover {
+  background: #F8FAFC;
+}
+
+/* ── スクロールバー ───────────────────────────────── */
+.cert-matrix-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cert-matrix-scroll::-webkit-scrollbar-track {
+  background: #F3F4F6;
+  border-radius: 4px;
+}
+
+.cert-matrix-scroll::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.cert-matrix-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* ── 偶数行の背景 ─────────────────────────────────── */
+.cert-matrix-body-row:nth-child(even) .cert-matrix-engineer-cell {
+  background: #FAFBFC;
+}
+
+.cert-matrix-body-row:nth-child(even) .cert-matrix-cell {
+  background: #FAFBFC;
+}
+
+.cert-matrix-body-row:nth-child(even):hover .cert-matrix-engineer-cell,
+.cert-matrix-body-row:nth-child(even):hover .cert-matrix-cell {
+  background: #F1F5F9;
+}
