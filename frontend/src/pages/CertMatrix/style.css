@@ -45,7 +45,7 @@
 }
 
 .cert-matrix-cert-header {
-  padding: 0 4px 8px;
+  padding: 8px 4px 0;
   font-size: 10px;
   font-weight: 600;
   text-align: center;
@@ -53,15 +53,14 @@
   max-width: 52px;
   width: 52px;
   height: 130px;
-  vertical-align: bottom;
+  vertical-align: top;
   background: #fff;
   overflow: hidden;
 }
 
-/* 資格名を縦書き表示 */
+/* 資格名を縦書き表示（上から下へ読む） */
 .cert-matrix-cert-header-text {
   writing-mode: vertical-rl;
-  transform: rotate(180deg);
   white-space: nowrap;
   display: inline-block;
   line-height: 1.2;
