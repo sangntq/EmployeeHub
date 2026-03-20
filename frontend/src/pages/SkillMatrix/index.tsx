@@ -183,7 +183,7 @@ export default function SkillMatrixPage() {
   }, [engineers])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 104px)' }}>
       <PageHeader title={t('skillMatrix.title')} />
 
       {/* フィルターバー */}
@@ -311,7 +311,7 @@ export default function SkillMatrixPage() {
                           borderBottom: `2px solid ${theme.bg}`,
                         }}
                       >
-                        {sk.name}
+                        <span className="skill-matrix-skill-header-text">{sk.name}</span>
                       </th>
                     )
                   })

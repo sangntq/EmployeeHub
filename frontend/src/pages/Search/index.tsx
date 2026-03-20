@@ -36,7 +36,6 @@ import {
 import {
   SearchOutlined,
   ReloadOutlined,
-  UserOutlined,
   PlusOutlined,
   DeleteOutlined,
   BookOutlined,
@@ -49,6 +48,7 @@ import { skillsApi } from '../../api/skills'
 import { searchApi } from '../../api/search'
 import type { SearchFilter, SearchResultItem } from '../../api/search'
 import PageHeader from '../../components/common/PageHeader'
+import { getAvatarColor, getInitials } from '../../utils/avatarUtils'
 
 const { Text } = Typography
 
@@ -701,9 +701,15 @@ function ResultCard({ item, selected, onToggleSelect, onView }: ResultCardProps)
           <Avatar
             size={46}
             src={employee.avatar_url}
-            icon={<UserOutlined />}
-            style={{ background: '#e6f4ff', color: '#1677ff', flexShrink: 0 }}
-          />
+            style={{
+              flexShrink: 0,
+              background: !employee.avatar_url ? getAvatarColor(employee.name_ja) : undefined,
+              fontWeight: 700,
+              fontSize: 16,
+            }}
+          >
+            {!employee.avatar_url && getInitials(employee.name_ja, employee.name_en)}
+          </Avatar>
         </Col>
         <Col flex="auto" style={{ minWidth: 0 }}>
           <div

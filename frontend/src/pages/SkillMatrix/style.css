@@ -45,14 +45,25 @@
 }
 
 .skill-matrix-skill-header {
-  padding: 6px 8px;
+  padding: 0 4px 8px;
   font-size: 11px;
   font-weight: 600;
   text-align: center;
-  white-space: nowrap;
-  min-width: 90px;
-  max-width: 120px;
+  min-width: 52px;
+  max-width: 52px;
+  width: 52px;
+  height: 110px;
+  vertical-align: bottom;
   background: #fff;
+}
+
+/* スキル名を縦書き表示 */
+.skill-matrix-skill-header-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 /* ── エンジニア列ヘッダー（固定） ─────────────────── */
@@ -162,12 +173,13 @@
 
 /* ── スキルセル ────────────────────────────────────── */
 .skill-matrix-cell {
-  padding: 4px 3px;
+  padding: 4px 2px;
   text-align: center;
   border-bottom: 1px solid #F3F4F6;
   border-right: 1px solid #F9FAFB;
   vertical-align: middle;
-  min-width: 90px;
+  min-width: 52px;
+  width: 52px;
 }
 
 .skill-matrix-body-row:hover .skill-matrix-cell {

@@ -45,23 +45,29 @@
 }
 
 .cert-matrix-cert-header {
-  padding: 6px 6px;
+  padding: 0 4px 8px;
   font-size: 10px;
   font-weight: 600;
   text-align: center;
-  white-space: nowrap;
-  min-width: 80px;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 52px;
+  max-width: 52px;
+  width: 52px;
+  height: 130px;
+  vertical-align: bottom;
   background: #fff;
+  overflow: hidden;
 }
 
-.cert-matrix-cert-header span {
-  display: block;
+/* 資格名を縦書き表示 */
+.cert-matrix-cert-header-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  display: inline-block;
+  line-height: 1.2;
+  max-height: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ── エンジニア列ヘッダー（固定） ─────────────────── */
@@ -171,12 +177,13 @@
 
 /* ── 資格セル ──────────────────────────────────────── */
 .cert-matrix-cell {
-  padding: 4px 3px;
+  padding: 4px 2px;
   text-align: center;
   border-bottom: 1px solid #F3F4F6;
   border-right: 1px solid #F9FAFB;
   vertical-align: middle;
-  min-width: 80px;
+  min-width: 52px;
+  width: 52px;
 }
 
 .cert-matrix-body-row:hover .cert-matrix-cell {

@@ -43,7 +43,8 @@ export default function AppLayout() {
           style={{
             padding: 24,
             background: '#F9FAFB',
-            minHeight: 'calc(100vh - 56px)',
+            height: 'calc(100vh - 56px)',
+            overflow: 'auto',
           }}
         >
           <Outlet />

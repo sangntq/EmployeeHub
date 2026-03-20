@@ -25,7 +25,6 @@ import {
   EditOutlined,
   SaveOutlined,
   UploadOutlined,
-  UserOutlined,
 } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -34,6 +33,7 @@ import { employeesApi } from '../../../api/employees'
 import type { EmployeeCreateData } from '../../../api/employees'
 import PageHeader from '../../../components/common/PageHeader'
 import { useAuth } from '../../../hooks/useAuth'
+import { getAvatarColor, getInitials } from '../../../utils/avatarUtils'
 import SkillsTab from './SkillsTab'
 import CertificationsTab from './CertificationsTab'
 import WorkStatusTab from './WorkStatusTab'
@@ -353,9 +353,15 @@ export default function EmployeeDetailPage() {
             <Avatar
               size={96}
               src={emp.avatar_url}
-              icon={!emp.avatar_url && <UserOutlined />}
-              style={{ marginBottom: 12 }}
-            />
+              style={{
+                marginBottom: 12,
+                background: !emp.avatar_url ? getAvatarColor(emp.name_ja) : undefined,
+                fontWeight: 700,
+                fontSize: 32,
+              }}
+            >
+              {!emp.avatar_url && getInitials(emp.name_ja, emp.name_en)}
+            </Avatar>
             {canEdit && (
               <div style={{ marginBottom: 12 }}>
                 <Upload

@@ -160,7 +160,7 @@ export default function CertMatrixPage() {
   }, [engineers])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 104px)' }}>
       <PageHeader title={t('certMatrix.title')} />
 
       {/* フィルターバー */}
@@ -306,7 +306,7 @@ export default function CertMatrixPage() {
                         }}
                       >
                         <Tooltip title={cert.name}>
-                          <span>{cert.name}</span>
+                          <span className="cert-matrix-cert-header-text">{cert.name}</span>
                         </Tooltip>
                       </th>
                     )

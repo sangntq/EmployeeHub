@@ -21,13 +21,14 @@ import {
   Button,
   Tooltip,
 } from 'antd'
-import { SearchOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons'
+import { SearchOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import PageHeader from '../../components/common/PageHeader'
 import { availabilityApi } from '../../api/availability'
 import type { AvailabilityMonth, EmployeeAvailability } from '../../api/availability'
 import type { EmployeeListItem } from '../../api/employees'
+import { getAvatarColor, getInitials } from '../../utils/avatarUtils'
 
 const { Option } = Select
 
@@ -39,16 +40,6 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
   FREE:    { bg: '#D1FAE5', text: '#065F46', label: 'availability.free' },
   PARTIAL: { bg: '#FEF3C7', text: '#92400E', label: 'availability.partial' },
   BUSY:    { bg: '#FEE2E2', text: '#991B1B', label: 'availability.busy' },
-}
-
-/** アバターの背景色（名前のcharCodeに基づく） */
-const AVATAR_COLORS = [
-  '#4F46E5', '#7C3AED', '#DB2777', '#DC2626',
-  '#D97706', '#059669', '#0891B2', '#2563EB',
-]
-
-function getAvatarColor(name: string): string {
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
 }
 
 /** YYYY-MM 形式の月ヘッダーを "YYYY年MM月" 表示に変換 */
@@ -114,16 +105,20 @@ export default function AvailabilityPage() {
     width: 220,
     render: (_: unknown, rec: EmployeeAvailability) => {
       const emp: EmployeeListItem = rec.employee
-      const initial = (emp.name_ja || '?').charAt(0)
       return (
         <Space>
           <Avatar
             size={32}
             src={emp.avatar_url}
-            icon={!emp.avatar_url ? <UserOutlined /> : undefined}
-            style={!emp.avatar_url ? { backgroundColor: getAvatarColor(emp.name_ja || ''), color: '#fff' } : undefined}
+            style={{
+              backgroundColor: !emp.avatar_url ? getAvatarColor(emp.name_ja || '') : undefined,
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 12,
+              flexShrink: 0,
+            }}
           >
-            {!emp.avatar_url ? initial : undefined}
+            {!emp.avatar_url && getInitials(emp.name_ja, emp.name_en)}
           </Avatar>
           <Space direction="vertical" size={0}>
             <Typography.Text strong style={{ fontSize: 13 }}>

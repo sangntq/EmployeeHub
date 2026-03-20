@@ -17,7 +17,6 @@ import {
 import {
   SearchOutlined,
   UserAddOutlined,
-  UserOutlined,
   AppstoreOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
@@ -28,6 +27,7 @@ import { employeesApi } from '../../../api/employees'
 import type { EmployeeListItem, EmployeeListParams } from '../../../api/employees'
 import PageHeader from '../../../components/common/PageHeader'
 import { useAuth } from '../../../hooks/useAuth'
+import { getAvatarColor, getInitials } from '../../../utils/avatarUtils'
 import EmployeeCard from './EmployeeCard'
 import EmployeeDetailPanel from './EmployeeDetailPanel'
 
@@ -68,9 +68,15 @@ export default function EmployeeListPage() {
           <Avatar
             size={36}
             src={rec.avatar_url}
-            icon={!rec.avatar_url && <UserOutlined />}
-            style={{ flexShrink: 0 }}
-          />
+            style={{
+              flexShrink: 0,
+              background: !rec.avatar_url ? getAvatarColor(rec.name_ja) : undefined,
+              fontWeight: 700,
+              fontSize: 13,
+            }}
+          >
+            {!rec.avatar_url && getInitials(rec.name_ja, rec.name_en)}
+          </Avatar>
           <Space direction="vertical" size={0}>
             <Typography.Link
               onClick={e => {
